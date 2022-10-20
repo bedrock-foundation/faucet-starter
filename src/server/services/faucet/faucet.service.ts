@@ -2,6 +2,8 @@ import { router, publicProcedure } from '../../trpc';
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { prisma } from '~/server/prisma';
+import { TRPCError } from '@trpc/server';
+import SecretKeyUtil from '~/server/utils/SecretKeyUtil';
 
 // const appRouter = router({
 //   file: fileService.router,
@@ -23,29 +25,44 @@ class FaucetService {
 
   public get router() {
     return router({
-      create: this.create,
+      initialize: this.initialize,
       get: this.get,
     });
   }
 
   /*============================================================================
-   * Create Faucet
+   * Initialize
    ============================================================================*/
 
-  public createInput = z.object({
-    id: z.string().uuid().optional(),
-    address: z.string(),
-  });
+  public initializeInput = z.object({});
 
-  public create = publicProcedure
-    .input(this.createInput)
-    .mutation(async ({ input }) => {
-      const { id, address } = input;
+  public initialize = publicProcedure
+    .input(this.initializeInput)
+    .mutation(async () => {
+      const [existingFaucet] = await prisma.faucet.findMany({
+        select: FaucetService.FaucetSelect,
+      });
+
+      if (existingFaucet) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Faucet has already been initialize',
+        });
+      }
+
+      const faucetKeyPair = await SecretKeyUtil.faucetSecretKey();
+      const pubkey = faucetKeyPair?.publicKey.toBase58();
+
+      if (!pubkey) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'No pubkey for faucet initialization found',
+        });
+      }
 
       const faucet = await prisma.faucet.create({
         data: {
-          id,
-          address,
+          address: pubkey,
         },
         select: FaucetService.FaucetSelect,
       });

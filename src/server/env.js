@@ -9,7 +9,9 @@ const { z } = require('zod');
 /*eslint sort-keys: "error"*/
 const envSchema = z.object({
   DATABASE_URL: z.string().url(),
+  FAUCET_SECRET_KEY_PATH: z.string(),
   NODE_ENV: z.enum(['development', 'test', 'production']),
+  SOLANA_RPC_ENDPOINT: z.string().url(),
 });
 
 const env = envSchema.safeParse(process.env);

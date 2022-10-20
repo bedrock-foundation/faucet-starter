@@ -3,7 +3,7 @@ import { RecoilRoot } from 'recoil';
 import { GeistProvider, CssBaseline } from '@geist-ui/core';
 import type { AppProps } from 'next/app';
 import { useRouter } from 'next/router';
-import { trpc } from '~/utils/trpc';
+import { trpc } from '~/shared/trpc';
 // import { ModalProvider } from '../components/modal/Modal';
 // import Colors from '../styles/Colors';
 // import Flex from '../elements/Flex';

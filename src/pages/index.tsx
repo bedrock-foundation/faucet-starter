@@ -13,6 +13,7 @@ import {
 import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
 import { useRecoilValue } from 'recoil';
+import { trpc } from '~/shared/trpc';
 import { Droplet } from '@geist-ui/icons';
 import { NextPageContext } from 'next';
 import PageHeader from '~/ui/components/PageHeader';
@@ -36,6 +37,7 @@ type FaucetListProps = any;
 const List = () => {
   // const { push } = useModal();
   const router = useRouter();
+  const initFaucet = trpc.faucet.initialize.useMutation();
 
   if (true) {
     return (
@@ -87,9 +89,9 @@ const List = () => {
                 <Button
                   width="100%"
                   scale={1.25}
-                  onClick={() => router.push('/dashboard/create-drip')}
+                  onClick={async () => await initFaucet.mutateAsync({})}
                 >
-                  Create Campaign
+                  Initialize Faucet
                 </Button>
                 {/* <Button onClick={() => router.push("/dashboard/create-drip")}>
                   View Documentation
@@ -128,7 +130,7 @@ const FaucetList: React.FC<FaucetListProps> = () => {
           <Button auto onClick={() => router.push('/PageLayout/create-drip')}>
             Withdraw Tokens
           </Button>
-          <Spacer w={1}/>
+          <Spacer w={1} />
           <Button auto onClick={() => router.push('/PageLayout/create-drip')}>
             Add Tokens
           </Button>
