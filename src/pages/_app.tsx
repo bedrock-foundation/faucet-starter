@@ -1,25 +1,33 @@
-import type { NextPage } from 'next';
-import type { AppType, AppProps } from 'next/app';
-import type { ReactElement, ReactNode } from 'react';
-import { DefaultLayout } from '~/components/DefaultLayout';
+import React from 'react';
+import { RecoilRoot } from 'recoil';
+import { GeistProvider, CssBaseline } from '@geist-ui/core';
+import type { AppProps } from 'next/app';
+import { useRouter } from 'next/router';
 import { trpc } from '~/utils/trpc';
+// import { ModalProvider } from '../components/modal/Modal';
+// import Colors from '../styles/Colors';
+// import Flex from '../elements/Flex';
+// import DefaultSEO from '../components/DefaultSeo';
 
-export type NextPageWithLayout<
-  TProps = Record<string, unknown>,
-  TInitialProps = TProps,
-> = NextPage<TProps, TInitialProps> & {
-  getLayout?: (page: ReactElement) => ReactNode;
+const App: React.FC<AppProps> = ({ Component, pageProps }) => {
+  /* Hooks */
+  const router = useRouter();
+
+  /* Render */
+  return (
+    <RecoilRoot>
+      <GeistProvider themeType="dark">
+        <CssBaseline />
+
+        {/* <ModalProvider /> */}
+        <Component
+          {...pageProps}
+          key={router.asPath}
+          suppressHydrationWarning
+        />
+      </GeistProvider>
+    </RecoilRoot>
+  );
 };
 
-type AppPropsWithLayout = AppProps & {
-  Component: NextPageWithLayout;
-};
-
-const MyApp = (({ Component, pageProps }: AppPropsWithLayout) => {
-  const getLayout =
-    Component.getLayout ?? ((page) => <DefaultLayout>{page}</DefaultLayout>);
-
-  return getLayout(<Component {...pageProps} />);
-}) as AppType;
-
-export default trpc.withTRPC(MyApp);
+export default trpc.withTRPC(App);

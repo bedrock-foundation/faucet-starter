@@ -1,159 +1,181 @@
-import { trpc } from '../utils/trpc';
-import { NextPageWithLayout } from './_app';
-import { inferProcedureInput } from '@trpc/server';
-import Link from 'next/link';
-import { Fragment } from 'react';
-import type { AppRouter } from '~/server/routers/_app';
+import React from 'react';
+import {
+  Button,
+  Card,
+  GeistUIThemes,
+  Grid,
+  Link,
+  Loading,
+  Spacer,
+  Text,
+  useTheme,
+} from '@geist-ui/core';
+import { useRouter } from 'next/router';
+import styled from '@emotion/styled';
+import { useRecoilValue } from 'recoil';
+import { Droplet } from '@geist-ui/icons';
+import { NextPageContext } from 'next';
+import PageHeader from '~/ui/components/PageHeader';
+import Flex from '~/ui/elements/Flex';
+// import useModal from '../../hooks/useModal.hook';
+// import { ModalTypes } from '../../components/modal/Modal';
+import PageLayout from '~/ui/components/PageLayout';
 
-const IndexPage: NextPageWithLayout = () => {
-  const utils = trpc.useContext();
-  const postsQuery = trpc.post.list.useInfiniteQuery(
-    {
-      limit: 5,
-    },
-    {
-      getPreviousPageParam(lastPage) {
-        return lastPage.nextCursor;
-      },
-    },
-  );
+type ContainerProps = {
+  theme: GeistUIThemes;
+};
 
-  const addPost = trpc.post.add.useMutation({
-    async onSuccess() {
-      // refetches posts after a post is added
-      await utils.post.list.invalidate();
-    },
-  });
+const Container = styled.div<ContainerProps>`
+  position: relative;
+  min-height: calc(100vh - 198px);
+  background-color: ${(props) => props.theme.palette.accents_1};
+`;
 
-  // prefetch all posts for instant navigation
-  // useEffect(() => {
-  //   const allPosts = postsQuery.data?.pages.flatMap((page) => page.items) ?? [];
-  //   for (const { id } of allPosts) {
-  //     void utils.post.byId.prefetch({ id });
-  //   }
-  // }, [postsQuery.data, utils]);
+type FaucetListProps = any;
+
+const List = () => {
+  // const { push } = useModal();
+  const router = useRouter();
+
+  if (true) {
+    return (
+      <div>
+        <Spacer />
+        <Card width="1000px" height="500px">
+          <Flex
+            align="center"
+            justify="center"
+            height="450px"
+            flex="1"
+            direction="column"
+          >
+            <Flex
+              align="center"
+              justify="center"
+              flex="1"
+              direction="column"
+              width="470px"
+            >
+              <Droplet size={60} />
+              <Spacer h={0.5} />
+              <Text style={{ textAlign: 'center' }} font="16px">
+                <Text b span>
+                  Drip
+                </Text>
+                &nbsp;is a new way to airdrop tokens to your web3 audience
+                using&nbsp;
+                <Link href="https://solanapay.com" target="_blank">
+                  <Text b span type="success">
+                    Solana Pay
+                  </Text>
+                </Link>
+                . It takes about{' '}
+                <Text b span>
+                  2 minutes
+                </Text>{' '}
+                to create a Drip QR code. Create a Campaign below to get
+                started, or{' '}
+                <Link href="https://google.com">
+                  <Text b span type="success">
+                    learn more
+                  </Text>
+                  .
+                </Link>
+              </Text>
+              <Spacer h={0.5} />
+              <Flex width="80%">
+                <Button
+                  width="100%"
+                  scale={1.25}
+                  onClick={() => router.push('/dashboard/create-drip')}
+                >
+                  Create Campaign
+                </Button>
+                {/* <Button onClick={() => router.push("/dashboard/create-drip")}>
+                  View Documentation
+                </Button>
+                <Spacer /> */}
+              </Flex>
+            </Flex>
+          </Flex>
+        </Card>
+      </div>
+    );
+  }
+
+  // return (
+  //   <Grid.Container direction="row" width="1024px" margin="8px" gap={2}>
+  //     {faucetList?.map((faucet: Faucet, index: number) => {
+  //       return (
+  //         <Grid xs={8} key={index}>
+  //           <FaucetCard faucet={faucet} />
+  //         </Grid>
+  //       );
+  //     })}
+  //   </Grid.Container>
+  // );
+};
+
+const FaucetList: React.FC<FaucetListProps> = () => {
+  const router = useRouter();
+  const theme = useTheme();
+  // const { push } = useModal();
 
   return (
-    <>
-      <h1>Welcome to your tRPC starter!</h1>
-      <p>
-        If you get stuck, check <a href="https://trpc.io">the docs</a>, write a
-        message in our <a href="https://trpc.io/discord">Discord-channel</a>, or
-        write a message in{' '}
-        <a href="https://github.com/trpc/trpc/discussions">
-          GitHub Discussions
-        </a>
-        .
-      </p>
-
-      <h2>
-        Latest Posts
-        {postsQuery.status === 'loading' && '(loading)'}
-      </h2>
-
-      <button
-        onClick={() => postsQuery.fetchPreviousPage()}
-        disabled={
-          !postsQuery.hasPreviousPage || postsQuery.isFetchingPreviousPage
-        }
-      >
-        {postsQuery.isFetchingPreviousPage
-          ? 'Loading more...'
-          : postsQuery.hasPreviousPage
-          ? 'Load More'
-          : 'Nothing more to load'}
-      </button>
-
-      {postsQuery.data?.pages.map((page, index) => (
-        <Fragment key={page.items[0]?.id || index}>
-          {page.items.map((item) => (
-            <article key={item.id}>
-              <h3>{item.title}</h3>
-              <Link href={`/post/${item.id}`}>
-                <a>View more</a>
-              </Link>
-            </article>
-          ))}
-        </Fragment>
-      ))}
-
-      <hr />
-
-      <h3>Add a Post</h3>
-
-      <form
-        onSubmit={async (e) => {
-          /**
-           * In a real app you probably don't want to use this manually
-           * Checkout React Hook Form - it works great with tRPC
-           * @see https://react-hook-form.com/
-           * @see https://kitchen-sink.trpc.io/react-hook-form
-           */
-          e.preventDefault();
-          const $form = e.currentTarget;
-          const values = Object.fromEntries(new FormData($form));
-          type Input = inferProcedureInput<AppRouter['post']['add']>;
-          //    ^?
-          const input: Input = {
-            title: values.title as string,
-            text: values.text as string,
-          };
-          try {
-            await addPost.mutateAsync(input);
-
-            $form.reset();
-          } catch (cause) {
-            console.error({ cause }, 'Failed to add post');
+    <PageLayout>
+      <PageHeader title="Overview">
+        <Flex>
+          <Button auto onClick={() => router.push('/PageLayout/create-drip')}>
+            Withdraw Tokens
+          </Button>
+          <Spacer w={1}/>
+          <Button auto onClick={() => router.push('/PageLayout/create-drip')}>
+            Add Tokens
+          </Button>
+          <Spacer />
+          <Button auto onClick={() => router.push('/PageLayout/create-drip')}>
+            Configure
+          </Button>
+          <Spacer />
+          <Button
+            type="secondary"
+            auto
+            onClick={() => router.push('/PageLayout/create-drip')}
+          >
+            View QR Code
+          </Button>
+        </Flex>
+      </PageHeader>
+      <Container theme={theme}>
+        <React.Suspense
+          fallback={
+            <Grid.Container
+              height="calc(100vh - 198px)"
+              justify="center"
+              style={{ background: theme.palette.accents_1 }}
+            >
+              <Loading />
+            </Grid.Container>
           }
-        }}
-      >
-        <label htmlFor="title">Title:</label>
-        <br />
-        <input
-          id="title"
-          name="title"
-          type="text"
-          disabled={addPost.isLoading}
-        />
-
-        <br />
-        <label htmlFor="text">Text:</label>
-        <br />
-        <textarea id="text" name="text" disabled={addPost.isLoading} />
-        <br />
-        <input type="submit" disabled={addPost.isLoading} />
-        {addPost.error && (
-          <p style={{ color: 'red' }}>{addPost.error.message}</p>
-        )}
-      </form>
-    </>
+        >
+          <Grid.Container
+            height="fit-content"
+            justify="center"
+            style={{ background: theme.palette.accents_1 }}
+          >
+            <List />
+          </Grid.Container>
+        </React.Suspense>
+      </Container>
+    </PageLayout>
   );
 };
 
-export default IndexPage;
+export default FaucetList;
 
-/**
- * If you want to statically render this page
- * - Export `appRouter` & `createContext` from [trpc].ts
- * - Make the `opts` object optional on `createContext()`
- *
- * @link https://trpc.io/docs/ssg
- */
-// export const getStaticProps = async (
-//   context: GetStaticPropsContext<{ filter: string }>,
-// ) => {
-//   const ssg = createProxySSGHelpers({
-//     router: appRouter,
-//     ctx: await createContext(),
-//   });
-//
-//   await ssg.post.all.fetch();
-//
-//   return {
-//     props: {
-//       trpcState: ssg.dehydrate(),
-//       filter: context.params?.filter ?? 'all',
-//     },
-//     revalidate: 1,
-//   };
-// };
+export async function getStaticProps(context: NextPageContext) {
+  console.log(`Building slug: ${context.pathname}`);
+  return {
+    props: {},
+  };
+}

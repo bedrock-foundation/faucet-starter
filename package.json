@@ -39,7 +39,13 @@
     "singleQuote": true
   },
   "dependencies": {
+    "@emotion/react": "^11.10.4",
+    "@emotion/styled": "^11.10.4",
+    "@geist-ui/core": "^2.3.8",
+    "@geist-ui/icons": "^1.0.2",
     "@prisma/client": "^4.3.1",
+    "@solana/pay": "^0.2.4",
+    "@solana/web3.js": "^1.66.1",
     "@tanstack/react-query": "^4.3.8",
     "@trpc/client": "^10.0.0-proxy-beta.24",
     "@trpc/next": "^10.0.0-proxy-beta.24",
@@ -49,6 +55,7 @@
     "next": "^12.3.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "recoil": "^0.7.6",
     "superjson": "^1.7.4",
     "zod": "^3.0.0"
   },
