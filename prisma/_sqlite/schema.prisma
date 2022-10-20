@@ -11,8 +11,10 @@ generator client {
 }
 
 model Faucet {
-  id        String   @id @default(uuid())
-  address   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  id              String   @id @default(uuid())
+  address         String
+  tokenMint       String @default("")
+  tokenMintAmount String @default("")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
 }

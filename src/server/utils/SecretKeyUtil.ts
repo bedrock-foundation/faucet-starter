@@ -1,6 +1,5 @@
 import { Keypair } from '@solana/web3.js';
 import fs from 'fs-extra';
-import path from 'path';
 
 const SecretKeyMap = new Map<string, Keypair>();
 
@@ -25,9 +24,6 @@ const faucetSecretKey = async (): Promise<Keypair | null> => {
   }
   return await keyPairFromFile(process.env.FAUCET_SECRET_KEY_PATH ?? '');
 };
-
-// Prime cache
-faucetSecretKey();
 
 const SecretKeyUtil = {
   faucetSecretKey,
