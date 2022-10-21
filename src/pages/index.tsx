@@ -96,7 +96,7 @@ const FaucetPage: React.FC<FaucetPageProps> = () => {
             return (
               <Grid.Container
                 direction="row"
-                width="1024px"
+                width="1000px"
                 margin="8px"
                 gap={2}
               >

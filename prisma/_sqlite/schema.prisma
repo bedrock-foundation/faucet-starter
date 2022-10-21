@@ -13,8 +13,24 @@ generator client {
 model Faucet {
   id              String   @id @default(uuid())
   address         String
-  tokenMint       String @default("")
-  tokenMintAmount String @default("")
+  tokenMint       String   @default("")
+  tokenMintAmount String   @default("")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+}
+
+model Scan {
+  id              String   @id @default(uuid())
+  scannerId       String
+  faucetId        String
+  faucetAddress   String
+  message         String
+  state           String
+  ref             String
+  tokenMint       String?
+  tokenMintAmount String?
+  mint            String?
+  signature       String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt
 }

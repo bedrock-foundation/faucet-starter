@@ -159,9 +159,9 @@ const FaucetDetailsCardInner: React.FC<FaucetDetailsCardProps> = ({
             );
           })}
         </Grid.Container>
-        <Card.Footer style={{ padding: '0px' }}>
+        {/* <Card.Footer style={{ padding: '0px' }}> */}
           {/* <ScansHeatMap /> */}
-        </Card.Footer>
+        {/* </Card.Footer> */}
       </Card>
     </Container>
   );
