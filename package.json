@@ -54,11 +54,13 @@
     "@trpc/react-query": "^10.0.0-proxy-beta.24",
     "@trpc/server": "^10.0.0-proxy-beta.24",
     "clsx": "^1.1.1",
+    "framer-motion": "^7.6.1",
     "fs-extra": "^10.1.0",
     "luxon": "^3.0.4",
     "next": "^12.3.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-tooltip": "^4.4.3",
     "recoil": "^0.7.6",
     "superjson": "^1.7.4",
     "zod": "^3.0.0"

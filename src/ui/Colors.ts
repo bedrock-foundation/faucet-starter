@@ -2,6 +2,7 @@ const Colors = {
   // Special
   Purple: '#26267f',
   Black: '#000000',
+  Black75: 'rgba(0,0,0,0.75)',
   White: '#FFFFFF',
   // Geist Theme Colors
   accents_1: '#111',

@@ -12,11 +12,12 @@ import styled from '@emotion/styled';
 import { trpc } from '~/shared/trpc';
 import PageHeader from '~/ui/components/PageHeader';
 import Flex from '~/ui/elements/Flex';
-// import useModal from '../../hooks/useModal.hook';
-// import { ModalTypes } from '../../components/modal/Modal';
 import PageLayout from '~/ui/components/PageLayout';
 import InitializeFaucet from '~/ui/components/InitializeFaucet';
 import FaucetDetailsCard from '~/ui/components/FaucetDetailsCard';
+import ScansTable from '~/ui/components/ScansTable';
+import useModal from '~/ui/hooks/useModal.hook';
+import { ModalTypes } from '~/ui/modals/Modal';
 
 type ContainerProps = {
   theme: GeistUIThemes;
@@ -35,12 +36,10 @@ const Content = styled.div`
   box-sizing: border-box;
 `;
 
-type FaucetPageProps = any;
-
-const FaucetPage: React.FC<FaucetPageProps> = () => {
+const FaucetPage: React.FC = () => {
   const router = useRouter();
   const theme = useTheme();
-  // const { push } = useModal();
+  const { push } = useModal();
   const { data: faucet, isLoading } = trpc.faucet.get.useQuery({});
 
   return (
@@ -51,7 +50,17 @@ const FaucetPage: React.FC<FaucetPageProps> = () => {
             Withdraw Tokens
           </Button>
           <Spacer w={1} />
-          <Button auto onClick={() => router.push('/PageLayout/create-drip')}>
+          <Button
+            auto
+            onClick={() =>
+              push({
+                type: ModalTypes.FundFaucet,
+                props: {
+                  faucetId: faucet?.id ?? '',
+                },
+              })
+            }
+          >
             Add Tokens
           </Button>
           <Spacer />
@@ -94,16 +103,14 @@ const FaucetPage: React.FC<FaucetPageProps> = () => {
             }
 
             return (
-              <Grid.Container
-                direction="row"
-                width="1000px"
-                margin="8px"
-                gap={2}
-              >
+              <>
+                <Spacer />
                 <Content>
                   <FaucetDetailsCard faucet={faucet} />
+                  <Spacer />
+                  <ScansTable faucetId={faucet.id ?? ''} />
                 </Content>
-              </Grid.Container>
+              </>
             );
           })()}
         </Grid.Container>

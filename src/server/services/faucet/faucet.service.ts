@@ -8,12 +8,11 @@ import RPCConnection from '~/server/utils/RPCConnection';
 import { PublicKey } from '@solana/web3.js';
 import { AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import TokenUtil, { TokenBalance } from '~/shared/utils/TokenUtil';
+import scanService, { Scan, ScanStates, ScanTypes } from '../scan/scan.service';
 
-// const appRouter = router({
-//   file: fileService.router,
-// });
-
-// const caller = appRouter.createCaller({});
+const caller = router({
+  scan: scanService.router,
+}).createCaller({});
 
 export type Faucet = Prisma.FaucetGetPayload<{
   select: { [K in keyof Required<Prisma.FaucetSelect>]: true };
@@ -23,6 +22,14 @@ export enum FaucetStatus {
   Unfunded = 'Unfunded',
   Active = 'Active',
 }
+
+export type FaucetAnalytics = {
+  faucetId: string;
+  uniqueAccounts: number;
+  redemptions: number;
+  tokensRedeemed: TokenBalance[];
+  balances: TokenBalance[];
+};
 
 class FaucetService {
   public static FaucetSelect = Prisma.validator<Prisma.FaucetSelect>()({
@@ -39,6 +46,7 @@ class FaucetService {
       initialize: this.initialize,
       get: this.get,
       balance: this.balance,
+      analytics: this.analytics,
     });
   }
 
@@ -95,7 +103,7 @@ class FaucetService {
   });
 
   /*============================================================================
-   * Get Faucet Balance
+   * Faucet Balance
    ============================================================================*/
   public balanceInput = z.object({});
 
@@ -128,6 +136,86 @@ class FaucetService {
 
     return balances;
   });
+
+  /*============================================================================
+   * Faucet Analaytics
+   ============================================================================*/
+  public analyticsInput = z.object({});
+
+  public analytics = publicProcedure
+    .input(this.analyticsInput)
+    .query(async (args) => {
+      const [faucet] = await prisma.faucet.findMany({
+        select: FaucetService.FaucetSelect,
+      });
+
+      if (!faucet) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Faucet has not been initialized',
+        });
+      }
+
+      const balances = await this.router.createCaller(args).balance({});
+
+      const scans: Scan[] = await caller.scan.list({ faucetId: faucet.id });
+
+      const { accounts, redemptions, tokensRedeemed } = scans.reduce(
+        (cur, next) => {
+          const states: ScanStates[] = ['Confirmed', 'Scanned'];
+
+          const types: ScanTypes[] = ['Redemption'];
+
+          if (
+            states.includes(next.state as ScanStates) &&
+            types.includes(next.type as ScanTypes)
+          ) {
+            cur.accounts.push(next.scannerId);
+            cur.redemptions++;
+            cur.tokensRedeemed = [];
+            // cur.tokensRedeemed = next.balanceChanges.reduce(
+            //   (curTokenBalances, nextTokenBalance) => {
+            //     const index = curTokenBalances.findIndex(
+            //       (tokenBalance) => tokenBalance.mint === nextTokenBalance.mint,
+            //     );
+
+            //     if (index > -1) {
+            //       curTokenBalances[index].amount =
+            //         BigInt(curTokenBalances[index].amount) +
+            //         BigInt(nextTokenBalance.amount);
+            //     } else {
+            //       curTokenBalances.push(nextTokenBalance);
+            //     }
+            //     return curTokenBalances;
+            //   },
+            //   cur.tokensRedeemed,
+            // );
+          }
+
+          return cur;
+        },
+        {
+          accounts: [] as string[],
+          redemptions: 0,
+          tokensRedeemed: [],
+        },
+      );
+
+      /**
+       * Get unique accounts
+       */
+      const uniqueAccounts = [...new Set(accounts)].length;
+
+      const analytics: FaucetAnalytics = {
+        faucetId: faucet.id,
+        uniqueAccounts,
+        redemptions,
+        tokensRedeemed,
+        balances,
+      };
+
+      return analytics;
+    });
 }
 
 export default new FaucetService();

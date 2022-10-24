@@ -8,14 +8,13 @@ import {
   Loading,
   Image,
 } from '@geist-ui/core';
-// import type { Faucet } from '~/server/services/faucet/faucet.service';
 import styled from '@emotion/styled';
 import Flex from '../elements/Flex';
-// import ScansHeatMap from './ScansHeatMap';
 import FaucetStatusView from './FaucetStatus';
 import FaucetUtil from '~/shared/utils/FaucetUtil';
 import TokenUtil, { TokenBalance } from '~/shared/utils/TokenUtil';
 import type { Faucet } from '~/server/services/faucet/faucet.service';
+import { trpc } from '~/shared/trpc';
 
 const Container = styled.div`
   position: relative;
@@ -55,8 +54,7 @@ const TokenBalanceView = ({ balance }: { balance: TokenBalance }) => (
 const FaucetDetailsCardInner: React.FC<FaucetDetailsCardProps> = ({
   faucet,
 }) => {
-  // const { uniqueAccounts, redemptions, tokensRedeemed, balances } =
-  //   useRecoilValue(FaucetState.selectedFaucetAnalytics);
+  const { data } = trpc.faucet.analytics.useQuery({});
 
   const fields = [
     {
@@ -67,30 +65,31 @@ const FaucetDetailsCardInner: React.FC<FaucetDetailsCardProps> = ({
         </Flex>
       ),
     },
-    // {
-    //   key: 'Balance',
-    //   value: (
-    //     <Flex>
-    //       {(() => {
-    //         const filteredBalances = balances.filter(
-    //           (balance) => BigInt(balance.amount) > BigInt(0),
-    //         );
+    {
+      key: 'Balance',
+      value: (
+        <Flex>
+          {(() => {
+            const filteredBalances =
+              data?.balances?.filter(
+                (balance) => BigInt(balance.amount) > BigInt(0),
+              ) ?? [];
 
-    //         if (filteredBalances.length) {
-    //           return filteredBalances.map((balance, index) => (
-    //             <TokenBalanceView key={index} balance={balance} />
-    //           ));
-    //         }
+            if (filteredBalances.length) {
+              return filteredBalances.map((balance, index) => (
+                <TokenBalanceView key={index} balance={balance} />
+              ));
+            }
 
-    //         return (
-    //           <Text span type="error">
-    //             Empty
-    //           </Text>
-    //         );
-    //       })()}
-    //     </Flex>
-    //   ),
-    // },
+            return (
+              <Text span type="error">
+                Empty
+              </Text>
+            );
+          })()}
+        </Flex>
+      ),
+    },
     {
       key: 'Tokens Per Redemption',
       value: (
@@ -101,41 +100,26 @@ const FaucetDetailsCardInner: React.FC<FaucetDetailsCardProps> = ({
         </Flex>
       ),
     },
-    // {
-    //   key: 'Total Tokens Redeemed',
-    //   value: (
-    //     <Flex>
-    //       {tokensRedeemed.length > 0
-    //         ? tokensRedeemed.map((balance, index) => (
-    //             <TokenBalanceView key={index} balance={balance} />
-    //           ))
-    //         : 'None'}
-    //     </Flex>
-    //   ),
-    // },
-    // {
-    //   key: 'Total Redemptions',
-    //   value: BigInt(redemptions).toLocaleString(),
-    // },
-    // {
-    //   key: 'Unique Accounts',
-    //   value: uniqueAccounts,
-    // },
-
-    // {
-    //   key: 'Starts',
-    //   value:
-    //     Number(faucet?.startsAt) > 0
-    //       ? TimeUtil.format(faucet?.startsAt ?? 0, 'ff')
-    //       : 'Immediately',
-    // },
-    // {
-    //   key: 'Ends',
-    //   value:
-    //     Number(faucet?.endsAt) > 0
-    //       ? TimeUtil.format(faucet?.endsAt ?? 0, 'ff')
-    //       : 'When empty',
-    // },
+    {
+      key: 'Total Tokens Redeemed',
+      value: (
+        <Flex>
+          {data?.tokensRedeemed?.length ?? 0 > 0
+            ? data?.tokensRedeemed.map((balance, index) => (
+                <TokenBalanceView key={index} balance={balance} />
+              ))
+            : 'None'}
+        </Flex>
+      ),
+    },
+    {
+      key: 'Total Redemptions',
+      value: BigInt(data?.redemptions ?? 0).toLocaleString(),
+    },
+    {
+      key: 'Unique Accounts',
+      value: data?.uniqueAccounts ?? 0,
+    },
   ];
 
   return (
@@ -144,7 +128,7 @@ const FaucetDetailsCardInner: React.FC<FaucetDetailsCardProps> = ({
         <Grid.Container gap={2}>
           {fields.map(({ key, value }, index: number) => {
             return (
-              <Grid xs={6} key={index}>
+              <Grid xs={8} key={index}>
                 <Flex direction="column">
                   <Text font="12px" type="secondary" span b>
                     {key}
@@ -159,9 +143,6 @@ const FaucetDetailsCardInner: React.FC<FaucetDetailsCardProps> = ({
             );
           })}
         </Grid.Container>
-        {/* <Card.Footer style={{ padding: '0px' }}> */}
-          {/* <ScansHeatMap /> */}
-        {/* </Card.Footer> */}
       </Card>
     </Container>
   );

@@ -11,12 +11,9 @@ import { prisma } from '~/server/prisma';
 
 export type Scan = Prisma.ScanGetPayload<{
   select: { [K in keyof Required<Prisma.ScanSelect>]: true };
-}> & {
-  type: ScanTypes;
-  state: ScanStates;
-};
+}>;
 
-export type ScanTypes = 'AddFunding' | 'Redemption' | 'Withdrawl';
+export type ScanTypes = 'Add Funding' | 'Redemption' | 'Withdrawl';
 
 export type ScanStates = 'Scanned' | 'Confirmed' | 'Failed';
 
@@ -28,6 +25,7 @@ class ScanService {
     faucetAddress: true,
     message: true,
     state: true,
+    type: true,
     ref: true,
     tokenMint: true,
     tokenMintAmount: true,
@@ -40,7 +38,8 @@ class ScanService {
   public get router() {
     return router({
       create: this.create,
-      get: this.list,
+      update: this.update,
+      list: this.list,
       find: this.find,
     });
   }
@@ -56,6 +55,7 @@ class ScanService {
     faucetAddress: z.string(),
     message: z.string(),
     state: z.string(),
+    type: z.string(),
     ref: z.string(),
     tokenMint: z.string().nullable(),
     tokenMintAmount: z.string().nullable(),

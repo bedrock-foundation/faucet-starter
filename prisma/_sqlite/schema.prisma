@@ -26,6 +26,7 @@ model Scan {
   faucetAddress   String
   message         String
   state           String
+  type            String
   ref             String
   tokenMint       String?
   tokenMintAmount String?
