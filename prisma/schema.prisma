@@ -2,22 +2,36 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 datasource db {
-  provider = "postgres"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 generator client {
   provider = "prisma-client-js"
 }
 
-model Post {
-  id    String @id @default(uuid())
-  title String
-  text  String
+model Faucet {
+  id              String   @id @default(uuid())
+  address         String
+  tokenMint       String   @default("")
+  tokenMintAmount String   @default("")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+}
 
-  // To return `Date`s intact through the API we use transformers
-  // https://trpc.io/docs/data-transformers
-  // This is unique so it can be used for cursor-based pagination
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+model Scan {
+  id              String   @id @default(uuid())
+  scannerId       String
+  faucetId        String
+  faucetAddress   String
+  message         String
+  state           String
+  type            String
+  ref             String
+  tokenMint       String?
+  tokenMintAmount String?
+  mint            String?
+  signature       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
 }

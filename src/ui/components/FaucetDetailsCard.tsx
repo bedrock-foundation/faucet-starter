@@ -7,6 +7,8 @@ import {
   Spacer,
   Loading,
   Image,
+  useToasts,
+  useClipboard,
 } from '@geist-ui/core';
 import styled from '@emotion/styled';
 import Flex from '../elements/Flex';
@@ -15,6 +17,7 @@ import FaucetUtil from '~/shared/utils/FaucetUtil';
 import TokenUtil, { TokenBalance } from '~/shared/utils/TokenUtil';
 import type { Faucet } from '~/server/services/faucet/faucet.service';
 import { trpc } from '~/shared/trpc';
+import AccountUtil from '~/shared/utils/AccountUtil';
 
 const Container = styled.div`
   position: relative;
@@ -55,6 +58,8 @@ const FaucetDetailsCardInner: React.FC<FaucetDetailsCardProps> = ({
   faucet,
 }) => {
   const { data } = trpc.faucet.analytics.useQuery({});
+  const { setToast } = useToasts();
+  const { copy } = useClipboard();
 
   const fields = [
     {
@@ -88,6 +93,21 @@ const FaucetDetailsCardInner: React.FC<FaucetDetailsCardProps> = ({
             );
           })()}
         </Flex>
+      ),
+    },
+    {
+      key: 'Faucet Address',
+      value: (
+        <Text
+          font="14px"
+          onClick={() => {
+            copy(faucet.address);
+            setToast({ text: 'Address Copied.', delay: 3000 });
+          }}
+          b
+        >
+          {AccountUtil.truncate(faucet.address)}
+        </Text>
       ),
     },
     {
@@ -128,7 +148,7 @@ const FaucetDetailsCardInner: React.FC<FaucetDetailsCardProps> = ({
         <Grid.Container gap={2}>
           {fields.map(({ key, value }, index: number) => {
             return (
-              <Grid xs={8} key={index}>
+              <Grid xs={6} key={index}>
                 <Flex direction="column">
                   <Text font="12px" type="secondary" span b>
                     {key}

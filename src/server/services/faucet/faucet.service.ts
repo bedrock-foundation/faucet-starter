@@ -5,7 +5,12 @@ import { prisma } from '~/server/prisma';
 import { TRPCError } from '@trpc/server';
 import SecretKeyUtil from '~/server/utils/SecretKeyUtil';
 import RPCConnection from '~/server/utils/RPCConnection';
-import { PublicKey } from '@solana/web3.js';
+import {
+  Keypair,
+  PublicKey,
+  Transaction,
+  TransactionInstruction,
+} from '@solana/web3.js';
 import { AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import TokenUtil, { TokenBalance } from '~/shared/utils/TokenUtil';
 import scanService, { Scan, ScanStates, ScanTypes } from '../scan/scan.service';
@@ -47,6 +52,7 @@ class FaucetService {
       get: this.get,
       balance: this.balance,
       analytics: this.analytics,
+      fund: this.fund,
     });
   }
 
@@ -215,6 +221,89 @@ class FaucetService {
       };
 
       return analytics;
+    });
+
+  /*============================================================================
+  * Fund Faucet
+  ============================================================================*/
+  public fundInput = z.object({
+    account: z.string(),
+    redemptions: z.string(),
+  });
+
+  public fund = publicProcedure
+    .input(this.fundInput)
+    .query(async ({ input: { account, redemptions } }) => {
+      const [faucet] = await prisma.faucet.findMany({
+        select: FaucetService.FaucetSelect,
+      });
+
+      if (!faucet) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Faucet has not been initialized',
+        });
+      }
+
+      /**
+       * Get the secret key for the faucet
+       */
+
+      const faucetKey = await SecretKeyUtil.faucetSecretKey();
+      if (!faucetKey) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Could not find secret key for faucet.',
+        });
+      }
+
+      /**
+       * Create the transaction
+       */
+      const ixs: TransactionInstruction[] = [];
+      const funderPublicKey = new PublicKey(account);
+      const ref = Keypair.generate().publicKey;
+
+      const transferIxs = await TokenUtil.transferSPLToken({
+        fromAccountPublicKey: funderPublicKey,
+        toAccountPublicKey: faucetKey.publicKey,
+        splTokenPublicKey: new PublicKey(faucet.tokenMint),
+        amount: String(BigInt(faucet.tokenMintAmount) * BigInt(redemptions)),
+        feePayerPublicKey: funderPublicKey,
+        refs: [ref],
+      });
+
+      ixs.push(...transferIxs);
+
+      const tx = new Transaction().add(...ixs);
+
+      tx.feePayer = funderPublicKey;
+
+      tx.recentBlockhash = (
+        await RPCConnection.getLatestBlockhash('finalized')
+      ).blockhash;
+
+      /**
+       * Here we serialize and deserialize the tx
+       * as a workaround for this isue
+       * https://github.com/solana-labs/solana/issues/21722
+       */
+      const orderedTx = Transaction.from(
+        tx.serialize({
+          requireAllSignatures: false,
+          verifySignatures: false,
+        }),
+      );
+
+      const txBuffer = orderedTx.serialize({
+        requireAllSignatures: false,
+        verifySignatures: false,
+      });
+
+      return {
+        transaction: txBuffer,
+        message: 'Confirm to add funds.',
+      };
     });
 }
 

@@ -3,12 +3,6 @@ import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { prisma } from '~/server/prisma';
 
-// const appRouter = router({
-//   file: fileService.router,
-// });
-
-// const caller = appRouter.createCaller({});
-
 export type Scan = Prisma.ScanGetPayload<{
   select: { [K in keyof Required<Prisma.ScanSelect>]: true };
 }>;

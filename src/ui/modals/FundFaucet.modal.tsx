@@ -7,11 +7,14 @@ import ModalHeader from './ModalHeader';
 // import TransactionButton from '../TransactionButton';
 import Flex from '../elements/Flex';
 import { Faucet } from '~/server/services/faucet/faucet.service';
+import QRCode from '../elements/QRCode';
+import { encodeURL } from '@solana/pay';
 
 const Content = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
 `;
 
 export type FundFaucetModalProps = {
@@ -22,7 +25,13 @@ const FundFaucetModal: React.FC<FundFaucetModalProps> = ({ faucetId }) => {
   /** Hooks */
   const { pop } = useModal();
   const [redemptions, setRedemptions] = React.useState(0);
-  // const result = DripSDK.fundFaucet({ faucetId, redemptions });
+  const fundFaucetURL = String(
+    encodeURL({
+      link: new URL(
+        `https://bedrock-platform-production.ngrok.io/api/http/fund-faucet?redemptions=${redemptions}&faucetId=${faucetId}`,
+      ),
+    }),
+  );
 
   /* Render */
   return (
@@ -35,17 +44,21 @@ const FundFaucetModal: React.FC<FundFaucetModalProps> = ({ faucetId }) => {
             Enter the number of redemptions you would like to add to this
             campaign and click Add Funds to approve the transaction.
           </Text>
-          <Label tip="Enter the number of redemptions you would like to add to this Campaign.">
-            Number of Redemptions
-          </Label>
-          <Input
-            value={String(redemptions)}
-            onChange={(e) => setRedemptions(parseInt(e.target.value, 10))}
-            placeholder="Number of Redemptions"
-            scale={2}
-            font="16px"
-            width="100%"
-          />
+          <Flex direction="column" width="100%">
+            <Label tip="Enter the number of redemptions you would like to add to this Campaign.">
+              Number of Redemptions
+            </Label>
+            <Input
+              value={String(redemptions)}
+              onChange={(e) => setRedemptions(parseInt(e.target.value, 10))}
+              placeholder="Number of Redemptions"
+              scale={2}
+              font="16px"
+              width="100%"
+            />
+          </Flex>
+          <Spacer />
+          <QRCode value={fundFaucetURL} />
         </Content>
       </Card.Content>
       <Divider h="1px" my={0} />

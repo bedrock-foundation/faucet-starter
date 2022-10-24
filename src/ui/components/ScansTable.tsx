@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   Image,
-  Link,
   Loading,
   Spacer,
   Table,
@@ -25,6 +24,7 @@ import { Droplet, Icon, MinusCircle, PlusCircle } from '@geist-ui/icons';
 import TokenUtil, { TokenBalance } from '~/shared/utils/TokenUtil';
 import Flex from '../elements/Flex';
 import { trpc } from '~/shared/trpc';
+import AccountUtil from '~/shared/utils/AccountUtil';
 
 const Container = styled.div`
   position: relative;
@@ -152,11 +152,7 @@ const ScansTableInner: React.FC<ScansTabelProps> = ({ faucetId }) => {
             </Text>
             <Spacer h={0.5} />
             <Flex width="80%">
-              <Button
-                width="100%"
-                scale={1.25}
-                onClick={async () => await initFaucet.mutateAsync({})}
-              >
+              <Button width="100%" scale={1.25}>
                 Deposit Tokens
               </Button>
             </Flex>
@@ -188,7 +184,7 @@ const ScansTableInner: React.FC<ScansTabelProps> = ({ faucetId }) => {
               label="Address"
               render={(scan) => {
                 return renderText(
-                  'AccountUtil.truncate(scan.scannerId as string)',
+                  AccountUtil.truncate(scan.scannerId as string),
                   'Copy Address',
                   () => {
                     copy(scan.scannerId as string);
@@ -275,13 +271,16 @@ const ScansTableInner: React.FC<ScansTabelProps> = ({ faucetId }) => {
             <Table.Column<ScanTableRow>
               prop="tokenAmount"
               label="Change"
-              render={({ balanceChanges, type, state }: Partial<Scan>) => {
+              render={({ balanceChanges, type, state }: Partial<any>) => {
                 return (
                   <Flex align="center" flex="0">
                     {balanceChanges
-                      ?.filter(({ amount }) => BigInt(amount) > BigInt(0))
-                      ?.sort((a, b) => (a.mint > b.mint ? 1 : -1))
-                      ?.map((balance) => {
+                      ?.filter(
+                        ({ amount }: { amount: any }) =>
+                          BigInt(amount) > BigInt(0),
+                      )
+                      ?.sort((a: any, b: any) => (a.mint > b.mint ? 1 : -1))
+                      ?.map((balance: any) => {
                         const { amount, info } = balance;
                         const render = (color: string, text: string) => (
                           <Flex align="center" key={balance.mint}>
