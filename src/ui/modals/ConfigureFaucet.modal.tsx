@@ -47,7 +47,7 @@ const ConfigureFaucetModal: React.FC<ConfigureFaucetModalProps> = ({
   /* Render */
   return (
     <Card width="400px">
-      <ModalHeader title="Add Redemptions" />
+      <ModalHeader title="Configure Faucet" />
       <Divider h="1px" my={0} />
       <Card.Content>
         <Content>
@@ -102,7 +102,7 @@ const ConfigureFaucetModal: React.FC<ConfigureFaucetModalProps> = ({
               });
             }}
           >
-            Update
+            Save
           </Button>
         </Flex>
       </Card.Content>

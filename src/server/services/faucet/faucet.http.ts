@@ -29,11 +29,27 @@ export async function fundFaucet(
     return metadata(res, 'Fund Faucet');
   }
 
-  console.log(req.body, req.query);
-
   const { transaction, message } = await caller.faucet.fund({
     account: req.body.account as string,
     redemptions: req.query.redemptions as string,
+  });
+
+  res.status(200).json({
+    transaction: transaction.toString('base64'),
+    message,
+  });
+}
+
+export async function withdrawFaucet(
+  req: NextApiRequest,
+  res: NextApiResponse<any | ResponseError>,
+) {
+  if (isGetRequest(req)) {
+    return metadata(res, 'Withdraw Faucet');
+  }
+
+  const { transaction, message } = await caller.faucet.withdraw({
+    account: req.body.account as string,
   });
 
   res.status(200).json({

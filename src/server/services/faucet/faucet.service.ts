@@ -55,6 +55,7 @@ class FaucetService {
       balance: this.balance,
       analytics: this.analytics,
       fund: this.fund,
+      withdraw: this.withdraw,
     });
   }
 
@@ -383,6 +384,156 @@ class FaucetService {
           message: e.message,
           state: 'Failed' as ScanStates,
           type: 'Add Funding' as ScanTypes,
+          ref: String(ref),
+          tokenMint: null,
+          tokenMintAmount: null,
+          signature: null,
+        });
+
+        throw e;
+      }
+    });
+  /*============================================================================
+  * Withdraw Faucet
+  ============================================================================*/
+  public withdrawInput = z.object({
+    account: z.string(),
+  });
+
+  public withdraw = publicProcedure
+    .input(this.withdrawInput)
+    .query(async (args) => {
+      const {
+        input: { account },
+      } = args;
+      /**
+       * Get the faucet
+       */
+      const [faucet] = await prisma.faucet.findMany({
+        select: FaucetService.FaucetSelect,
+      });
+
+      if (!faucet) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Faucet has not been initialized',
+        });
+      }
+
+      /**
+       * Create ref to track the transaction
+       */
+
+      const ref = Keypair.generate().publicKey;
+
+      try {
+        /**
+         * Get the secret key for the faucet
+         */
+        const faucetKey = await SecretKeyUtil.faucetSecretKey();
+        if (!faucetKey) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Could not find secret key for faucet.',
+          });
+        }
+
+        /**
+         * Get Faucet Balance
+         */
+
+        const balances = await this.router.createCaller(args).balance({});
+        const tokenBalance = balances.find(
+          (balance) => balance.mint === faucet.tokenMint,
+        );
+
+        if (!tokenBalance || Number(tokenBalance.amount) === 0) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'This faucet does not have a balance of the token mint.',
+          });
+        }
+
+        /**
+         * Create the transaction
+         */
+        const ixs: TransactionInstruction[] = [];
+        const withdrawerPublicKey = new PublicKey(account);
+
+        const transferIxs = await TransferUtil.transferSPLToken({
+          fromAccountPublicKey: faucetKey.publicKey,
+          toAccountPublicKey: withdrawerPublicKey,
+          splTokenPublicKey: new PublicKey(faucet.tokenMint),
+          amount: tokenBalance.amount,
+          feePayerPublicKey: withdrawerPublicKey,
+          refs: [ref],
+        });
+
+        ixs.push(...transferIxs);
+
+        const tx = new Transaction().add(...ixs);
+
+        tx.feePayer = withdrawerPublicKey;
+
+        tx.recentBlockhash = (
+          await RPCConnection.getLatestBlockhash('finalized')
+        ).blockhash;
+
+        /**
+         * Here we serialize and deserialize the tx
+         * as a workaround for this isue
+         * https://github.com/solana-labs/solana/issues/21722
+         */
+        const orderedTx = Transaction.from(
+          tx.serialize({
+            requireAllSignatures: false,
+            verifySignatures: false,
+          }),
+        );
+
+        /**
+         * Partial sign the transaction
+         */
+
+        orderedTx.partialSign(faucetKey);
+
+        const txBuffer = orderedTx.serialize({
+          requireAllSignatures: false,
+          verifySignatures: false,
+        });
+
+        /**
+         * Create successful scan
+         */
+
+        caller.scan.create({
+          scannerId: account,
+          faucetId: faucet.id,
+          faucetAddress: faucet.address,
+          message: 'Waiting for confirmation',
+          state: 'Scanned' as ScanStates,
+          type: 'Withdrawl' as ScanTypes,
+          ref: String(ref),
+          tokenMint: faucet.tokenMint,
+          tokenMintAmount: tokenBalance.amount,
+          signature: null,
+        });
+
+        return {
+          transaction: txBuffer,
+          message: 'Confirm to withdraw funds.',
+        };
+      } catch (e: any) {
+        /**
+         * Create failure scan
+         */
+        caller.scan.create({
+          scannerId: account,
+          faucetId: faucet.id,
+          faucetAddress: faucet.address,
+          message: e.message,
+          state: 'Failed' as ScanStates,
+          type: 'Withdrawl' as ScanTypes,
           ref: String(ref),
           tokenMint: null,
           tokenMintAmount: null,

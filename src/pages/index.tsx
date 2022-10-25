@@ -52,7 +52,17 @@ const FaucetPage: React.FC = () => {
     <PageLayout>
       <PageHeader title="Overview">
         <Flex>
-          <Button auto onClick={() => router.push('/PageLayout/create-drip')}>
+          <Button
+            auto
+            onClick={() =>
+              push({
+                type: ModalTypes.WithdrawFaucet,
+                props: {
+                  faucetId: faucet?.id ?? '',
+                },
+              })
+            }
+          >
             Withdraw Tokens
           </Button>
           <Spacer w={1} />

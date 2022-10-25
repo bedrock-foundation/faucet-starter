@@ -345,7 +345,7 @@ const ScansTableInner: React.FC<ScansTabelProps> = ({ faucetId }) => {
               render={(scan: any) => {
                 return (
                   <Flex justify="space-between" align="center" width="100%">
-                    {renderText(scan.message)}
+                    {renderText(scan.message, scan.message)}
                     {scan?.signature && (
                       <Button
                         scale={1 / 2}

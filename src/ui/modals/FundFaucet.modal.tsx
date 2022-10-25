@@ -4,7 +4,6 @@ import { Button, Card, Divider, Input, Spacer, Text } from '@geist-ui/core';
 import useModal from '../hooks/useModal.hook';
 import Label from '../elements/Label';
 import ModalHeader from './ModalHeader';
-// import TransactionButton from '../TransactionButton';
 import Flex from '../elements/Flex';
 import { Faucet } from '~/server/services/faucet/faucet.service';
 import QRCode from '../elements/QRCode';
@@ -33,16 +32,19 @@ const FundFaucetModal: React.FC<FundFaucetModalProps> = ({ faucetId }) => {
     }),
   );
 
+  console.log(fundFaucetURL);
+
   /* Render */
   return (
     <Card width="400px">
-      <ModalHeader title="Add Redemptions" />
+      <ModalHeader title="Add Tokens" />
       <Divider h="1px" my={0} />
       <Card.Content>
         <Content>
           <Text marginTop="0px">
             Enter the number of redemptions you would like to add to this
-            campaign and click Add Funds to approve the transaction.
+            faucet, then scan the QR code below with a Solana Pay enabled mobile
+            wallet.
           </Text>
           <Flex direction="column" width="100%">
             <Label tip="Enter the number of redemptions you would like to add to this Campaign.">
@@ -66,17 +68,8 @@ const FundFaucetModal: React.FC<FundFaucetModalProps> = ({ faucetId }) => {
       <Card.Content>
         <Flex justify="flex-end">
           <Button onClick={pop} auto>
-            Cancel
+            Close
           </Button>
-          <Spacer />
-          {/* <TransactionButton
-            auto
-            type="secondary"
-            link={result}
-            onComplete={() => pop()}
-          >
-            Add Funds
-          </TransactionButton> */}
         </Flex>
       </Card.Content>
     </Card>

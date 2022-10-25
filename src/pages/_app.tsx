@@ -15,7 +15,7 @@ const Tooltip = styled(ReactTooltip)`
   border-radius: 4px;
   max-width: 250px;
   padding: 12px !important;
-  background-color: rgba(0, 0, 0, 0.8) !important;
+  background-color: ${Colors.accents_2} !important;
 `;
 
 const App: React.FC<AppProps> = ({ Component, pageProps }) => {

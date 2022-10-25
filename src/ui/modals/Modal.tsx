@@ -6,9 +6,10 @@ import Colors from '../Colors';
 import { FadeIn } from '../elements/Motion';
 import AppState from '../recoil/app.recoil';
 import FundFaucetModal, { FundFaucetModalProps } from './FundFaucet.modal';
-
 // import RedeemFaucetModal, { RedeemFaucetModalProps } from './RedeemFaucet.modal';
-// import WithdrawFaucetModal, { WithdrawFaucetModalProps } from './WithdrawFaucet.modal';
+import WithdrawFaucetModal, {
+  WithdrawFaucetModalProps,
+} from './WithdrawFaucet.modal';
 import ConfigureFaucetModal, {
   ConfigureFaucetModalProps,
 } from './ConfigureFaucet.modal';
@@ -23,7 +24,7 @@ export enum ModalTypes {
 interface ModalProps {
   [ModalTypes.FundFaucet]: FundFaucetModalProps;
   // [ModalTypes.RedeemFaucet]: RedeemFaucetModalProps;
-  // [ModalTypes.WithdrawFaucet]: WithdrawFaucetModalProps;
+  [ModalTypes.WithdrawFaucet]: WithdrawFaucetModalProps;
   [ModalTypes.ConfigureFaucet]: ConfigureFaucetModalProps;
 }
 
@@ -113,8 +114,8 @@ const RenderModal: React.FC<RenderModalProps> = ({ modal, active }) => (
           return <FundFaucetModal {...props} />;
         // case ModalTypes.RedeemFaucet:
         //   return <RedeemFaucetModal {...props} />;
-        // case ModalTypes.WithdrawFaucet:
-        //   return <WithdrawFaucetModal {...props} />;
+        case ModalTypes.WithdrawFaucet:
+          return <WithdrawFaucetModal {...props} />;
         case ModalTypes.ConfigureFaucet:
           return <ConfigureFaucetModal {...props} />;
         default:
