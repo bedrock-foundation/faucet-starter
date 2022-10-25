@@ -30,7 +30,6 @@ model Scan {
   ref             String
   tokenMint       String?
   tokenMintAmount String?
-  mint            String?
   signature       String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt

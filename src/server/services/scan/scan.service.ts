@@ -2,6 +2,9 @@ import { router, publicProcedure } from '../../trpc';
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { prisma } from '~/server/prisma';
+import RPCConnection from '~/server/utils/RPCConnection';
+import WaitUtil from '~/shared/utils/WaitUtil';
+import { PublicKey } from '@solana/web3.js';
 
 export type Scan = Prisma.ScanGetPayload<{
   select: { [K in keyof Required<Prisma.ScanSelect>]: true };
@@ -23,11 +26,60 @@ class ScanService {
     ref: true,
     tokenMint: true,
     tokenMintAmount: true,
-    mint: true,
     signature: true,
     createdAt: true,
     updatedAt: true,
   });
+
+  private confirmTransaction = async (
+    ref: string,
+    scanId: string,
+  ): Promise<void> => {
+    let signature: string | null = null;
+    try {
+      /**
+       * Try to confirm the transaction 60 times
+       * waiting 2 seconds between each attempt.
+       */
+      for (let i = 0; i < 60; i++) {
+        await WaitUtil.wait(2000);
+        const signatures = await RPCConnection.getSignaturesForAddress(
+          new PublicKey(ref),
+          {},
+          'confirmed',
+        );
+
+        if (signatures.length > 0) {
+          signature = signatures[0].signature ?? null;
+
+          await prisma.scan.update({
+            where: { id: scanId },
+            data: { signature, message: 'Confirmed', state: 'Confirmed' },
+            select: ScanService.ScanSelect,
+          });
+
+          break;
+        }
+      }
+
+      /**
+       * Mark the transaction as failed if it was not confirmed
+       */
+      if (!signature) {
+        prisma.scan.update({
+          where: { id: scanId },
+          data: {
+            signature: null,
+            message: 'Failed to confirm in 2 minutes',
+            state: 'Failed',
+          },
+        });
+      }
+    } catch (e) {
+      console.error(`Error confirming transaction for scanId ${scanId}`);
+      console.error(e);
+    }
+  };
 
   public get router() {
     return router({
@@ -39,11 +91,10 @@ class ScanService {
   }
 
   /*============================================================================
-   * Create
+   * Create Scan
    ============================================================================*/
 
   public createInput = z.object({
-    id: z.string(),
     scannerId: z.string(),
     faucetId: z.string(),
     faucetAddress: z.string(),
@@ -53,7 +104,6 @@ class ScanService {
     ref: z.string(),
     tokenMint: z.string().nullable(),
     tokenMintAmount: z.string().nullable(),
-    mint: z.string().nullable(),
     signature: z.string().nullable(),
   });
 
@@ -65,15 +115,19 @@ class ScanService {
         select: ScanService.ScanSelect,
       });
 
+      /**
+       * Start polling for the transaction to be confirmed
+       */
+
       if (scan.state === 'Scanned') {
-        // Timer here
+        this.confirmTransaction(scan.ref, scan.id);
       }
 
       return scan;
     });
 
   /*============================================================================
- * Update
+ * Update Scan
  ============================================================================*/
 
   public updateInput = z.object({
@@ -108,6 +162,7 @@ class ScanService {
       const scans = await prisma.scan.findMany({
         where: { faucetId },
         select: ScanService.ScanSelect,
+        orderBy: { createdAt: 'desc' },
       });
 
       return scans;

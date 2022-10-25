@@ -58,7 +58,7 @@ class FaucetService {
   }
 
   /*============================================================================
-   * Initialize
+   * Initialize Faucet
    ============================================================================*/
 
   public initializeInput = z.object({});
@@ -97,7 +97,7 @@ class FaucetService {
     });
 
   /*============================================================================
- * Update
+ * Update Faucet
  ============================================================================*/
 
   public updateInput = z.object({
@@ -268,6 +268,9 @@ class FaucetService {
   public fund = publicProcedure
     .input(this.fundInput)
     .query(async ({ input: { account, redemptions } }) => {
+      /**
+       * Get the faucet
+       */
       const [faucet] = await prisma.faucet.findMany({
         select: FaucetService.FaucetSelect,
       });
@@ -280,72 +283,113 @@ class FaucetService {
       }
 
       /**
-       * Get the secret key for the faucet
+       * Create ref to track the transaction
        */
 
-      const faucetKey = await SecretKeyUtil.faucetSecretKey();
-      if (!faucetKey) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Could not find secret key for faucet.',
-        });
-      }
-
-      /**
-       * Create the transaction
-       */
-      const ixs: TransactionInstruction[] = [];
-      const funderPublicKey = new PublicKey(account);
       const ref = Keypair.generate().publicKey;
 
-      const tokenInfo = TokenUtil.tokenInfoMap.get(faucet.tokenMint);
-      const qty =
-        TokenUtil.convertSizeToQuantity(
-          String(BigInt(faucet.tokenMintAmount)),
-          faucet.tokenMint,
-          tokenInfo,
-        ) ?? '0';
+      try {
+        /**
+         * Get the secret key for the faucet
+         */
+        const faucetKey = await SecretKeyUtil.faucetSecretKey();
+        if (!faucetKey) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Could not find secret key for faucet.',
+          });
+        }
 
-      const transferIxs = await TokenUtil.transferSPLToken({
-        fromAccountPublicKey: funderPublicKey,
-        toAccountPublicKey: faucetKey.publicKey,
-        splTokenPublicKey: new PublicKey(faucet.tokenMint),
-        amount: String(BigInt(qty) * BigInt(redemptions)),
-        feePayerPublicKey: funderPublicKey,
-        refs: [ref],
-      });
+        /**
+         * Create the transaction
+         */
+        const ixs: TransactionInstruction[] = [];
+        const funderPublicKey = new PublicKey(account);
 
-      ixs.push(...transferIxs);
+        const tokenInfo = TokenUtil.tokenInfoMap.get(faucet.tokenMint);
+        const qty =
+          TokenUtil.convertSizeToQuantity(
+            String(BigInt(faucet.tokenMintAmount)),
+            faucet.tokenMint,
+            tokenInfo,
+          ) ?? '0';
 
-      const tx = new Transaction().add(...ixs);
+        const transferIxs = await TokenUtil.transferSPLToken({
+          fromAccountPublicKey: funderPublicKey,
+          toAccountPublicKey: faucetKey.publicKey,
+          splTokenPublicKey: new PublicKey(faucet.tokenMint),
+          amount: String(BigInt(qty) * BigInt(redemptions)),
+          feePayerPublicKey: funderPublicKey,
+          refs: [ref],
+        });
 
-      tx.feePayer = funderPublicKey;
+        ixs.push(...transferIxs);
 
-      tx.recentBlockhash = (
-        await RPCConnection.getLatestBlockhash('finalized')
-      ).blockhash;
+        const tx = new Transaction().add(...ixs);
 
-      /**
-       * Here we serialize and deserialize the tx
-       * as a workaround for this isue
-       * https://github.com/solana-labs/solana/issues/21722
-       */
-      const orderedTx = Transaction.from(
-        tx.serialize({
+        tx.feePayer = funderPublicKey;
+
+        tx.recentBlockhash = (
+          await RPCConnection.getLatestBlockhash('finalized')
+        ).blockhash;
+
+        /**
+         * Here we serialize and deserialize the tx
+         * as a workaround for this isue
+         * https://github.com/solana-labs/solana/issues/21722
+         */
+        const orderedTx = Transaction.from(
+          tx.serialize({
+            requireAllSignatures: false,
+            verifySignatures: false,
+          }),
+        );
+
+        const txBuffer = orderedTx.serialize({
           requireAllSignatures: false,
           verifySignatures: false,
-        }),
-      );
+        });
 
-      const txBuffer = orderedTx.serialize({
-        requireAllSignatures: false,
-        verifySignatures: false,
-      });
+        /**
+         * Create successful scan
+         */
 
-      return {
-        transaction: txBuffer,
-        message: 'Confirm to add funds.',
-      };
+        caller.scan.create({
+          scannerId: account,
+          faucetId: faucet.id,
+          faucetAddress: faucet.address,
+          message: 'Waiting for confirmation',
+          state: 'Scanned' as ScanStates,
+          type: 'Add Funding' as ScanTypes,
+          ref: String(ref),
+          tokenMint: faucet.tokenMint,
+          tokenMintAmount: faucet.tokenMintAmount,
+          signature: null,
+        });
+
+        return {
+          transaction: txBuffer,
+          message: 'Confirm to add funds.',
+        };
+      } catch (e: any) {
+        /**
+         * Create failure scan
+         */
+        caller.scan.create({
+          scannerId: account,
+          faucetId: faucet.id,
+          faucetAddress: faucet.address,
+          message: e.message,
+          state: 'Failed' as ScanStates,
+          type: 'Add Funding' as ScanTypes,
+          ref: String(ref),
+          tokenMint: null,
+          tokenMintAmount: null,
+          signature: null,
+        });
+
+        throw e;
+      }
     });
 }
 

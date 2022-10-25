@@ -73,8 +73,8 @@ const ScansTableInner: React.FC<ScansTabelProps> = ({ faucetId }) => {
   const { copy } = useClipboard();
 
   /* State */
-  const { data: scanList } = trpc.scan.list.useQuery({ faucetId });
-  // const refresh = useRecoilRefresher_UNSTABLE(ScanState.scanList);
+  const scanList = trpc.scan.list.useQuery({ faucetId });
+  const refresh = () => scanList.refetch();
 
   /**
    * Rebuild ToolTip
@@ -99,7 +99,7 @@ const ScansTableInner: React.FC<ScansTabelProps> = ({ faucetId }) => {
    * Render
    */
   const tableData: ScanTableRow[] =
-    scanList?.map((scan: Scan) => {
+    scanList?.data?.map((scan: Scan) => {
       return {
         scannerId: scan,
         type: scan,
@@ -129,7 +129,7 @@ const ScansTableInner: React.FC<ScansTabelProps> = ({ faucetId }) => {
     );
   };
 
-  if (!scanList?.length) {
+  if (!scanList?.data?.length) {
     return (
       <Card width="1000px" height="300px">
         <Flex
@@ -170,7 +170,7 @@ const ScansTableInner: React.FC<ScansTabelProps> = ({ faucetId }) => {
             Interactions
           </Text>
           <Flex>
-            <Button scale={3 / 4} auto onClick={() => console.log('refresh')}>
+            <Button scale={3 / 4} auto onClick={() => refresh()}>
               Refresh
             </Button>
             <Spacer />
@@ -265,7 +265,13 @@ const ScansTableInner: React.FC<ScansTabelProps> = ({ faucetId }) => {
               prop="createdAt"
               label="Date"
               render={(scan) =>
-                renderText(TimeUtil.format(String(scan?.createdAt) ?? 0, 'ff'))
+                renderText(
+                  TimeUtil.format(
+                    new Date(scan.createdAt).getTime() ?? 0,
+                    'ff',
+                    Intl.DateTimeFormat().resolvedOptions().timeZone,
+                  ),
+                )
               }
             />
             <Table.Column<ScanTableRow>
