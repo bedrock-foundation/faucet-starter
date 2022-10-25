@@ -19,15 +19,13 @@ export type WithdrawFaucetModalProps = {
   faucetId: Faucet['id'];
 };
 
-const WithdrawFaucetModal: React.FC<WithdrawFaucetModalProps> = ({
-  faucetId,
-}) => {
+const WithdrawFaucetModal: React.FC<WithdrawFaucetModalProps> = () => {
   /** Hooks */
   const { pop } = useModal();
   const fundFaucetURL = String(
     encodeURL({
       link: new URL(
-        `https://bedrock-platform-production.ngrok.io/api/http/withdraw-faucet?faucetId=${faucetId}`,
+        `https://bedrock-platform-production.ngrok.io/api/http/withdraw-faucet`,
       ),
     }),
   );

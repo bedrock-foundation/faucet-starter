@@ -55,6 +55,7 @@ class FaucetService {
       balance: this.balance,
       analytics: this.analytics,
       fund: this.fund,
+      redeem: this.redeem,
       withdraw: this.withdraw,
     });
   }
@@ -393,6 +394,148 @@ class FaucetService {
         throw e;
       }
     });
+
+  /*============================================================================
+  * Redeem Faucet
+  ============================================================================*/
+  public redeemInput = z.object({
+    account: z.string(),
+  });
+
+  public redeem = publicProcedure
+    .input(this.redeemInput)
+    .query(async (args) => {
+      const {
+        input: { account },
+      } = args;
+      /**
+       * Get the faucet
+       */
+      const [faucet] = await prisma.faucet.findMany({
+        select: FaucetService.FaucetSelect,
+      });
+
+      if (!faucet) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Faucet has not been initialized',
+        });
+      }
+
+      /**
+       * Create ref to track the transaction
+       */
+
+      const ref = Keypair.generate().publicKey;
+
+      try {
+        /**
+         * Get the secret key for the faucet
+         */
+        const faucetKey = await SecretKeyUtil.faucetSecretKey();
+        if (!faucetKey) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Could not find secret key for faucet.',
+          });
+        }
+
+        const tokenInfo = TokenUtil.tokenInfoMap.get(faucet.tokenMint);
+        const qty =
+          TokenUtil.convertSizeToQuantity(
+            String(BigInt(faucet.tokenMintAmount)),
+            faucet.tokenMint,
+            tokenInfo,
+          ) ?? '0';
+
+        /**
+         * Create the transaction
+         */
+        const ixs: TransactionInstruction[] = [];
+        const redeemerPublicKey = new PublicKey(account);
+
+        const transferIxs = await TransferUtil.transferSPLToken({
+          fromAccountPublicKey: faucetKey.publicKey,
+          toAccountPublicKey: redeemerPublicKey,
+          splTokenPublicKey: new PublicKey(faucet.tokenMint),
+          amount: qty,
+          feePayerPublicKey: redeemerPublicKey,
+          refs: [ref],
+        });
+
+        ixs.push(...transferIxs);
+
+        const tx = new Transaction().add(...ixs);
+
+        tx.feePayer = redeemerPublicKey;
+
+        tx.recentBlockhash = (
+          await RPCConnection.getLatestBlockhash('finalized')
+        ).blockhash;
+
+        /**
+         * Here we serialize and deserialize the tx
+         * as a workaround for this isue
+         * https://github.com/solana-labs/solana/issues/21722
+         */
+        const orderedTx = Transaction.from(
+          tx.serialize({
+            requireAllSignatures: false,
+            verifySignatures: false,
+          }),
+        );
+
+        /**
+         * Partial sign the transaction
+         */
+
+        orderedTx.partialSign(faucetKey);
+
+        const txBuffer = orderedTx.serialize({
+          requireAllSignatures: false,
+          verifySignatures: false,
+        });
+
+        /**
+         * Create successful scan
+         */
+        caller.scan.create({
+          scannerId: account,
+          faucetId: faucet.id,
+          faucetAddress: faucet.address,
+          message: 'Waiting for confirmation',
+          state: 'Scanned' as ScanStates,
+          type: 'Redemption' as ScanTypes,
+          ref: String(ref),
+          tokenMint: faucet.tokenMint,
+          tokenMintAmount: faucet.tokenMintAmount,
+          signature: null,
+        });
+
+        return {
+          transaction: txBuffer,
+          message: 'Confirm to redeem.',
+        };
+      } catch (e: any) {
+        /**
+         * Create failure scan
+         */
+        caller.scan.create({
+          scannerId: account,
+          faucetId: faucet.id,
+          faucetAddress: faucet.address,
+          message: e.message,
+          state: 'Failed' as ScanStates,
+          type: 'Redemption' as ScanTypes,
+          ref: String(ref),
+          tokenMint: null,
+          tokenMintAmount: null,
+          signature: null,
+        });
+
+        throw e;
+      }
+    });
   /*============================================================================
   * Withdraw Faucet
   ============================================================================*/
@@ -441,7 +584,6 @@ class FaucetService {
         /**
          * Get Faucet Balance
          */
-
         const balances = await this.router.createCaller(args).balance({});
         const tokenBalance = balances.find(
           (balance) => balance.mint === faucet.tokenMint,

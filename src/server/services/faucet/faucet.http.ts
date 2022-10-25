@@ -40,6 +40,24 @@ export async function fundFaucet(
   });
 }
 
+export async function redeemFaucet(
+  req: NextApiRequest,
+  res: NextApiResponse<any | ResponseError>,
+) {
+  if (isGetRequest(req)) {
+    return metadata(res, 'Redeem Faucet');
+  }
+
+  const { transaction, message } = await caller.faucet.redeem({
+    account: req.body.account as string,
+  });
+
+  res.status(200).json({
+    transaction: transaction.toString('base64'),
+    message,
+  });
+}
+
 export async function withdrawFaucet(
   req: NextApiRequest,
   res: NextApiResponse<any | ResponseError>,

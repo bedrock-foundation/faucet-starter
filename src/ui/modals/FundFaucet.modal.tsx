@@ -20,19 +20,17 @@ export type FundFaucetModalProps = {
   faucetId: Faucet['id'];
 };
 
-const FundFaucetModal: React.FC<FundFaucetModalProps> = ({ faucetId }) => {
+const FundFaucetModal: React.FC<FundFaucetModalProps> = () => {
   /** Hooks */
   const { pop } = useModal();
   const [redemptions, setRedemptions] = React.useState(100);
   const fundFaucetURL = String(
     encodeURL({
       link: new URL(
-        `https://bedrock-platform-production.ngrok.io/api/http/fund-faucet?redemptions=${redemptions}&faucetId=${faucetId}`,
+        `https://bedrock-platform-production.ngrok.io/api/http/fund-faucet?redemptions=${redemptions}`,
       ),
     }),
   );
-
-  console.log(fundFaucetURL);
 
   /* Render */
   return (

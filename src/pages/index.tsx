@@ -7,7 +7,6 @@ import {
   Spacer,
   useTheme,
 } from '@geist-ui/core';
-import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
 import { trpc } from '~/shared/trpc';
 import PageHeader from '~/ui/components/PageHeader';
@@ -18,7 +17,6 @@ import FaucetDetailsCard from '~/ui/components/FaucetDetailsCard';
 import ScansTable from '~/ui/components/ScansTable';
 import useModal from '~/ui/hooks/useModal.hook';
 import { ModalTypes } from '~/ui/modals/Modal';
-import { NextPageContext } from 'next';
 
 type ContainerProps = {
   theme: GeistUIThemes;
@@ -38,7 +36,6 @@ const Content = styled.div`
 `;
 
 const FaucetPage: React.FC = () => {
-  const router = useRouter();
   const theme = useTheme();
   const { push } = useModal();
   const { data: faucet, isLoading } = trpc.faucet.get.useQuery(
@@ -97,7 +94,14 @@ const FaucetPage: React.FC = () => {
           <Button
             type="secondary"
             auto
-            onClick={() => router.push('/PageLayout/create-drip')}
+            onClick={() =>
+              push({
+                type: ModalTypes.RedeemFaucet,
+                props: {
+                  faucetId: faucet?.id ?? '',
+                },
+              })
+            }
           >
             View QR Code
           </Button>
@@ -147,8 +151,7 @@ const FaucetPage: React.FC = () => {
 
 export default FaucetPage;
 
-export async function getStaticProps(context: NextPageContext) {
-  console.log(`Building slug: ${context.pathname}`);
+export async function getStaticProps() {
   return {
     props: {},
   };

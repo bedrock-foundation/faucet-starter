@@ -81,7 +81,6 @@ const ConfigureFaucetModal: React.FC<ConfigureFaucetModalProps> = ({
               scale={1.25}
             />
           </Flex>
-          <Spacer />
         </Content>
       </Card.Content>
       <Divider h="1px" my={0} />

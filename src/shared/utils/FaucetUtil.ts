@@ -25,7 +25,6 @@ const faucetStatus = (
   faucetBalance: TokenBalance[],
 ): FaucetStatus => {
   const redemptionBalance = faucetRedemptionBalance(faucet);
-  console.log(redemptionBalance);
 
   if (!TokenUtil.isTokenBalanceValid(redemptionBalance, faucetBalance)) {
     return 'Unfunded' as FaucetStatus;
