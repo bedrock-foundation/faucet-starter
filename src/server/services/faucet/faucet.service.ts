@@ -14,6 +14,7 @@ import {
 import { AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import TokenUtil, { TokenBalance } from '~/shared/utils/TokenUtil';
 import scanService, { Scan, ScanStates, ScanTypes } from '../scan/scan.service';
+import TransferUtil from '~/server/utils/TransferUtil';
 
 const caller = router({
   scan: scanService.router,
@@ -314,7 +315,7 @@ class FaucetService {
             tokenInfo,
           ) ?? '0';
 
-        const transferIxs = await TokenUtil.transferSPLToken({
+        const transferIxs = await TransferUtil.transferSPLToken({
           fromAccountPublicKey: funderPublicKey,
           toAccountPublicKey: faucetKey.publicKey,
           splTokenPublicKey: new PublicKey(faucet.tokenMint),

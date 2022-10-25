@@ -50,7 +50,7 @@ class ScanService {
         );
 
         if (signatures.length > 0) {
-          signature = signatures[0].signature ?? null;
+          signature = signatures[0]?.signature ?? null;
 
           await prisma.scan.update({
             where: { id: scanId },
