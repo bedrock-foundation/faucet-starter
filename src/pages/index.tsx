@@ -18,6 +18,7 @@ import FaucetDetailsCard from '~/ui/components/FaucetDetailsCard';
 import ScansTable from '~/ui/components/ScansTable';
 import useModal from '~/ui/hooks/useModal.hook';
 import { ModalTypes } from '~/ui/modals/Modal';
+import { NextPageContext } from 'next';
 
 type ContainerProps = {
   theme: GeistUIThemes;
@@ -40,7 +41,12 @@ const FaucetPage: React.FC = () => {
   const router = useRouter();
   const theme = useTheme();
   const { push } = useModal();
-  const { data: faucet, isLoading } = trpc.faucet.get.useQuery({});
+  const { data: faucet, isLoading } = trpc.faucet.get.useQuery(
+    {},
+    {
+      queryKey: ['faucet.get', {}],
+    },
+  );
 
   return (
     <PageLayout>
@@ -64,7 +70,17 @@ const FaucetPage: React.FC = () => {
             Add Tokens
           </Button>
           <Spacer />
-          <Button auto onClick={() => router.push('/PageLayout/create-drip')}>
+          <Button
+            auto
+            onClick={() =>
+              push({
+                type: ModalTypes.ConfigureFaucet,
+                props: {
+                  faucet: faucet ?? null,
+                },
+              })
+            }
+          >
             Configure
           </Button>
           <Spacer />
@@ -120,3 +136,10 @@ const FaucetPage: React.FC = () => {
 };
 
 export default FaucetPage;
+
+export async function getStaticProps(context: NextPageContext) {
+  console.log(`Building slug: ${context.pathname}`);
+  return {
+    props: {},
+  };
+}

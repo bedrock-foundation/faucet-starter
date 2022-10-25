@@ -12,8 +12,8 @@ type ContainerProps = {
 const Container = styled.div<ContainerProps>`
   box-sizing: border-box;
   padding: 16px;
-  width: ${(props) => (props.size ? `${props.size}px` : '372px')};
-  height: ${(props) => (props.size ? `${props.size}px` : '372px')};
+  width: ${(props) => (props.size ? `${props.size}px` : '368px')};
+  height: ${(props) => (props.size ? `${props.size}px` : '368px')};
   background-color: ${(props) =>
     props.isLoading
       ? props.theme.palette.background

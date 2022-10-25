@@ -47,10 +47,10 @@ const isTokenBalanceValid = (
 
 const convertSizeToQuantity = (
   size: string,
-  tokenType: string,
+  address: string,
   tokenInfo?: TokenInfo,
 ): string | null => {
-  tokenInfo = tokenInfo ?? TokenUtil.tokenInfoMap.get(tokenType);
+  tokenInfo = tokenInfo ?? TokenUtil.tokenInfoMap.get(address);
 
   if (!tokenInfo) return null;
 
@@ -59,12 +59,12 @@ const convertSizeToQuantity = (
 
 const convertQuantityToSize = (
   quantity: string,
-  tokenType: string,
+  address: string,
   tokenInfo?: TokenInfo,
 ): string | null => {
   if (quantity === 'Infinity') return '∞';
 
-  tokenInfo = tokenInfo ?? TokenUtil.tokenInfoMap.get(tokenType);
+  tokenInfo = tokenInfo ?? TokenUtil.tokenInfoMap.get(address);
 
   if (!tokenInfo) return null;
 
@@ -73,10 +73,10 @@ const convertQuantityToSize = (
 
 const formatQuantity = (
   quantity: string,
-  tokenType: string,
+  address: string,
   tokenInfo?: TokenInfo,
 ): string | null => {
-  tokenInfo = tokenInfo ?? TokenUtil.tokenInfoMap.get(tokenType);
+  tokenInfo = tokenInfo ?? TokenUtil.tokenInfoMap.get(address);
 
   if (!tokenInfo) return null;
 

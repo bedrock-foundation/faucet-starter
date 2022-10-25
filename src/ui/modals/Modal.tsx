@@ -4,21 +4,27 @@ import { useRecoilValue } from 'recoil';
 import { useBodyScroll } from '@geist-ui/core';
 import Colors from '../Colors';
 import { FadeIn } from '../elements/Motion';
-import FundFaucetModal, { FundFaucetModalProps } from './FundFaucet.modal';
 import AppState from '../recoil/app.recoil';
+import FundFaucetModal, { FundFaucetModalProps } from './FundFaucet.modal';
+
 // import RedeemFaucetModal, { RedeemFaucetModalProps } from './RedeemFaucet.modal';
 // import WithdrawFaucetModal, { WithdrawFaucetModalProps } from './WithdrawFaucet.modal';
+import ConfigureFaucetModal, {
+  ConfigureFaucetModalProps,
+} from './ConfigureFaucet.modal';
 
 export enum ModalTypes {
   FundFaucet = 'FundFaucet',
   RedeemFaucet = 'RedeemFaucet',
   WithdrawFaucet = 'WithdrawFaucet',
+  ConfigureFaucet = 'ConfigureFaucet',
 }
 
 interface ModalProps {
   [ModalTypes.FundFaucet]: FundFaucetModalProps;
   // [ModalTypes.RedeemFaucet]: RedeemFaucetModalProps;
   // [ModalTypes.WithdrawFaucet]: WithdrawFaucetModalProps;
+  [ModalTypes.ConfigureFaucet]: ConfigureFaucetModalProps;
 }
 
 export type TModalProps = ModalProps[keyof ModalProps];
@@ -27,17 +33,6 @@ export interface ModalConfig {
   type: ModalTypes;
   props: TModalProps;
 }
-
-export enum ModalPositions {
-  Top = 'Top',
-  Center = 'Center',
-}
-
-const positions = {
-  [ModalTypes.FundFaucet]: ModalPositions.Center,
-  [ModalTypes.RedeemFaucet]: ModalPositions.Center,
-  [ModalTypes.WithdrawFaucet]: ModalPositions.Center,
-};
 
 /** ******************************************************************************
  *  Modal
@@ -77,7 +72,6 @@ export const ModalProvider: React.FC = () => {
           key={index}
           modal={modal}
           active={index === modals.length - 1}
-          isTop={positions[modal.type] === ModalPositions.Top}
         />
       ))}
     </Container>
@@ -90,7 +84,6 @@ export const ModalProvider: React.FC = () => {
 
 type RenderModalContainerProps = {
   active: boolean;
-  isTop: boolean;
 };
 
 const RenderModalContainer = styled.div<RenderModalContainerProps>`
@@ -99,8 +92,8 @@ const RenderModalContainer = styled.div<RenderModalContainerProps>`
   left: ${(props) => (props.active ? null : '-10000000px')};
   display: flex;
   justify-content: center;
-  align-items: ${(props) => (props.isTop ? 'flex-start' : 'center')};
-  padding: ${(props) => (props.isTop ? '100px 0' : '0')};
+  align-items: center;
+  padding: 0;
   height: 100%;
   width: 100%;
 `;
@@ -108,11 +101,10 @@ const RenderModalContainer = styled.div<RenderModalContainerProps>`
 type RenderModalProps = {
   modal: ModalConfig;
   active: boolean;
-  isTop: boolean;
 };
 
-const RenderModal: React.FC<RenderModalProps> = ({ modal, active, isTop }) => (
-  <RenderModalContainer active={active} isTop={isTop}>
+const RenderModal: React.FC<RenderModalProps> = ({ modal, active }) => (
+  <RenderModalContainer active={active}>
     {(() => {
       const props = modal.props as any;
 
@@ -123,6 +115,8 @@ const RenderModal: React.FC<RenderModalProps> = ({ modal, active, isTop }) => (
         //   return <RedeemFaucetModal {...props} />;
         // case ModalTypes.WithdrawFaucet:
         //   return <WithdrawFaucetModal {...props} />;
+        case ModalTypes.ConfigureFaucet:
+          return <ConfigureFaucetModal {...props} />;
         default:
           return <div />;
       }

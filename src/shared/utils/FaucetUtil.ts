@@ -6,10 +6,17 @@ import type {
 } from '~/server/services/faucet/faucet.service';
 
 const faucetRedemptionBalance = (faucet: Faucet): TokenBalance => {
+  const info = TokenUtil.tokenInfoMap.get(faucet.tokenMint);
+  const qty = TokenUtil.convertSizeToQuantity(
+    faucet.tokenMintAmount,
+    faucet.tokenMint,
+    info,
+  );
+
   return {
     mint: faucet.tokenMint,
-    amount: faucet.tokenMintAmount,
-    info: null,
+    amount: qty ?? '0',
+    info: info ?? null,
   };
 };
 
@@ -18,6 +25,7 @@ const faucetStatus = (
   faucetBalance: TokenBalance[],
 ): FaucetStatus => {
   const redemptionBalance = faucetRedemptionBalance(faucet);
+  console.log(redemptionBalance);
 
   if (!TokenUtil.isTokenBalanceValid(redemptionBalance, faucetBalance)) {
     return 'Unfunded' as FaucetStatus;

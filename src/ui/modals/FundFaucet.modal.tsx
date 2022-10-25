@@ -24,7 +24,7 @@ export type FundFaucetModalProps = {
 const FundFaucetModal: React.FC<FundFaucetModalProps> = ({ faucetId }) => {
   /** Hooks */
   const { pop } = useModal();
-  const [redemptions, setRedemptions] = React.useState(0);
+  const [redemptions, setRedemptions] = React.useState(100);
   const fundFaucetURL = String(
     encodeURL({
       link: new URL(
@@ -35,7 +35,7 @@ const FundFaucetModal: React.FC<FundFaucetModalProps> = ({ faucetId }) => {
 
   /* Render */
   return (
-    <Card width="500px">
+    <Card width="400px">
       <ModalHeader title="Add Redemptions" />
       <Divider h="1px" my={0} />
       <Card.Content>
@@ -50,10 +50,11 @@ const FundFaucetModal: React.FC<FundFaucetModalProps> = ({ faucetId }) => {
             </Label>
             <Input
               value={String(redemptions)}
-              onChange={(e) => setRedemptions(parseInt(e.target.value, 10))}
+              onChange={(e) => setRedemptions(Number(e.target.value))}
+              inputMode="numeric"
+              htmlType="number"
               placeholder="Number of Redemptions"
-              scale={2}
-              font="16px"
+              scale={1.25}
               width="100%"
             />
           </Flex>

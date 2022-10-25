@@ -49,6 +49,7 @@ class FaucetService {
   public get router() {
     return router({
       initialize: this.initialize,
+      update: this.update,
       get: this.get,
       balance: this.balance,
       analytics: this.analytics,
@@ -95,6 +96,39 @@ class FaucetService {
       return faucet;
     });
 
+  /*============================================================================
+ * Update
+ ============================================================================*/
+
+  public updateInput = z.object({
+    tokenMint: z.string(),
+    tokenMintAmount: z.string(),
+  });
+
+  public update = publicProcedure
+    .input(this.updateInput)
+    .mutation(async ({ input: { tokenMint, tokenMintAmount } }) => {
+      const [existingFaucet] = await prisma.faucet.findMany({
+        select: FaucetService.FaucetSelect,
+      });
+
+      if (!existingFaucet) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Faucet has not been initialized',
+        });
+      }
+
+      const faucet = await prisma.faucet.update({
+        where: { id: existingFaucet?.id },
+        data: {
+          tokenMint,
+          tokenMintAmount,
+        },
+        select: FaucetService.FaucetSelect,
+      });
+      return faucet;
+    });
   /*============================================================================
    * Get Faucet
    ============================================================================*/
@@ -264,11 +298,19 @@ class FaucetService {
       const funderPublicKey = new PublicKey(account);
       const ref = Keypair.generate().publicKey;
 
+      const tokenInfo = TokenUtil.tokenInfoMap.get(faucet.tokenMint);
+      const qty =
+        TokenUtil.convertSizeToQuantity(
+          String(BigInt(faucet.tokenMintAmount)),
+          faucet.tokenMint,
+          tokenInfo,
+        ) ?? '0';
+
       const transferIxs = await TokenUtil.transferSPLToken({
         fromAccountPublicKey: funderPublicKey,
         toAccountPublicKey: faucetKey.publicKey,
         splTokenPublicKey: new PublicKey(faucet.tokenMint),
-        amount: String(BigInt(faucet.tokenMintAmount) * BigInt(redemptions)),
+        amount: String(BigInt(qty) * BigInt(redemptions)),
         feePayerPublicKey: funderPublicKey,
         refs: [ref],
       });

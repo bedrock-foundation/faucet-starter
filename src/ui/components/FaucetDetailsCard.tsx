@@ -32,7 +32,7 @@ type FaucetDetailsCardProps = {
 const convert = (balance: TokenBalance) => {
   return (
     TokenUtil.formatQuantity(
-      balance.amount ?? '0',
+      balance.amount,
       balance?.mint,
       balance?.info ?? undefined,
     ) ?? '0'
