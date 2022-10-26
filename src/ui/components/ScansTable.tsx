@@ -277,64 +277,72 @@ const ScansTableInner: React.FC<ScansTabelProps> = ({ faucetId }) => {
             <Table.Column<ScanTableRow>
               prop="tokenAmount"
               label="Change"
-              render={({ balanceChanges, type, state }: Partial<any>) => {
+              render={({
+                tokenMint,
+                tokenMintAmount,
+                type,
+                state,
+              }: Partial<Scan>) => {
                 return (
                   <Flex align="center" flex="0">
-                    {balanceChanges
-                      ?.filter(
-                        ({ amount }: { amount: any }) =>
-                          BigInt(amount) > BigInt(0),
-                      )
-                      ?.sort((a: any, b: any) => (a.mint > b.mint ? 1 : -1))
-                      ?.map((balance: any) => {
-                        const { amount, info } = balance;
-                        const render = (color: string, text: string) => (
-                          <Flex align="center" key={balance.mint}>
-                            <Image
-                              src={info?.logoURI ?? ''}
-                              alt="Token Logo"
-                              height="16px"
-                              width="16px"
-                              style={{ borderRadius: '50%' }}
-                            />
-                            <Spacer w={0.5} h={0} />
-                            <CellText font="10px" color={color}>
-                              {text}
-                            </CellText>
-                            <Spacer w={1} h={0} />
-                          </Flex>
-                        );
+                    {(() => {
+                      const info = TokenUtil.tokenInfoMap.get(tokenMint ?? '');
+                      const qty = TokenUtil.convertSizeToQuantity(
+                        tokenMintAmount ?? '0',
+                        tokenMint ?? '',
+                        info,
+                      );
+                      const render = (color: string, text: string) => (
+                        <Flex align="center" key={tokenMint}>
+                          <Image
+                            src={info?.logoURI ?? ''}
+                            alt="Token Logo"
+                            height="16px"
+                            width="16px"
+                            style={{ borderRadius: '50%' }}
+                          />
+                          <Spacer w={0.5} h={0} />
+                          <CellText font="10px" color={color}>
+                            {text}
+                          </CellText>
+                          <Spacer w={1} h={0} />
+                        </Flex>
+                      );
 
-                        if (state === 'Failed' || !amount) {
-                          return render(theme.palette.accents_8, '--');
-                        }
+                      if (state === 'Failed' || !qty) {
+                        return render(theme.palette.accents_8, '--');
+                      }
 
-                        const formattedAmount = convert(balance);
+                      const formattedAmount = convert({
+                        mint: tokenMint ?? '',
+                        amount: qty,
+                        info: info ?? null,
+                      });
 
-                        switch (type as ScanTypes) {
-                          case 'Add Funding':
-                            return render(
-                              theme.palette.cyanDark,
-                              `+${formattedAmount}`,
-                            );
-                          case 'Redemption':
-                            return render(
-                              theme.palette.error,
-                              `-${formattedAmount}`,
-                            );
-                          case 'Withdrawl':
-                            return render(
-                              theme.palette.error,
-                              `-${formattedAmount}`,
-                            );
+                      switch (type as ScanTypes) {
+                        case 'Add Funding':
+                          return render(
+                            theme.palette.cyanDark,
+                            `+${formattedAmount}`,
+                          );
+                        case 'Redemption':
+                          return render(
+                            theme.palette.error,
+                            `-${formattedAmount}`,
+                          );
+                        case 'Withdrawl':
+                          return render(
+                            theme.palette.error,
+                            `-${formattedAmount}`,
+                          );
 
-                          default:
-                            return render(
-                              theme.palette.accents_8,
-                              `${formattedAmount}`,
-                            );
-                        }
-                      })}
+                        default:
+                          return render(
+                            theme.palette.accents_8,
+                            `${formattedAmount}`,
+                          );
+                      }
+                    })()}
                   </Flex>
                 );
               }}
@@ -342,7 +350,7 @@ const ScansTableInner: React.FC<ScansTabelProps> = ({ faucetId }) => {
             <Table.Column<ScanTableRow>
               prop="message"
               label="Message"
-              render={(scan: any) => {
+              render={(scan: Scan) => {
                 return (
                   <Flex justify="space-between" align="center" width="100%">
                     {renderText(scan.message, scan.message)}

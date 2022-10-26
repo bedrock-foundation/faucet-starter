@@ -2,7 +2,7 @@ import React from 'react';
 import styled from '@emotion/styled';
 
 type FlexProps = {
-  children?: any;
+  children?: React.ReactNode;
   height?: string;
   width?: string;
   direction?: string;

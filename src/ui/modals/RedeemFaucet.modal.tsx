@@ -23,7 +23,7 @@ const RedeemFaucetModal: React.FC<RedeemFaucetModalProps> = () => {
   /** Hooks */
 
   const { pop } = useModal();
-  const printRef = React.useRef(null);
+  const printRef = React.useRef<any>(null);
   const redeemFaucetUrl = String(
     encodeURL({
       link: new URL(
@@ -34,7 +34,7 @@ const RedeemFaucetModal: React.FC<RedeemFaucetModalProps> = () => {
 
   /** Actions */
   const download = async () => {
-    const element: any = printRef?.current ?? null;
+    const element = printRef?.current ?? null;
     if (!element) return;
     const canvas = element.canvas.current;
 

@@ -3,7 +3,7 @@ import { redeemFaucet } from '~/server/services/faucet/faucet.http';
 
 export default async function redeemFaucetRoute(
   req: NextApiRequest,
-  res: NextApiResponse<any>,
+  res: NextApiResponse,
 ) {
   return redeemFaucet(req, res);
 }

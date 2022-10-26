@@ -4,9 +4,7 @@ import { trpc } from '~/shared/trpc';
 import { Droplet } from '@geist-ui/icons';
 import Flex from '~/ui/elements/Flex';
 
-type InitializeFaucetProps = any;
-
-const InitializeFaucet: React.FC<InitializeFaucetProps> = () => {
+const InitializeFaucet: React.FC = () => {
   const initFaucet = trpc.faucet.initialize.useMutation();
 
   return (

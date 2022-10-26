@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 
 type ErrorPopProps = {
   duration?: number;
-  children: any;
+  children: React.ReactNode;
 };
 
 export const ErrorPop: React.FC<ErrorPopProps> = ({
@@ -36,7 +36,7 @@ export const ErrorPop: React.FC<ErrorPopProps> = ({
 
 type PopProps = {
   duration?: number;
-  children: any;
+  children: React.ReactNode;
 };
 
 export const Pop: React.FC<PopProps> = ({ children, ...props }) => (
@@ -85,7 +85,7 @@ export const CardPop: React.FC<ErrorPopProps> = ({
 
 type FadeInProps = {
   duration?: number;
-  children: any;
+  children: React.ReactNode;
 };
 
 export const FadeIn: React.FC<FadeInProps> = ({
@@ -113,7 +113,7 @@ type SlideInProps = {
   duration?: number;
   isOpen: boolean;
   shouldAnimate: boolean;
-  children: any;
+  children: React.ReactNode;
 };
 
 const slideInVariants = {

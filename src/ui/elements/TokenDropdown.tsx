@@ -2,6 +2,7 @@ import React from 'react';
 import { AutoComplete, Image, Spacer, Text } from '@geist-ui/core';
 import Flex from './Flex';
 import { TokenInfo } from '~/shared/utils/TokenUtil';
+import { AutoCompleteOptions } from '@geist-ui/core/esm/auto-complete';
 
 type TokenDropdownProps = {
   value: string;
@@ -17,7 +18,7 @@ const TokenDropdown: React.FC<TokenDropdownProps> = ({
   scale,
 }) => {
   /** State */
-  const [options, setOptions] = React.useState<any>();
+  const [options, setOptions] = React.useState<AutoCompleteOptions>();
 
   const allOptions = tokens.map((token) => {
     return {
@@ -26,7 +27,7 @@ const TokenDropdown: React.FC<TokenDropdownProps> = ({
     };
   });
 
-  const makeOption = (label: any, tokenBalance: TokenInfo) => (
+  const makeOption = (label: string, tokenBalance: TokenInfo) => (
     <AutoComplete.Option value={tokenBalance?.address ?? ''}>
       <Flex height="60px" align="center" justify="space-between" width="100%">
         <Flex align="center">
@@ -43,7 +44,7 @@ const TokenDropdown: React.FC<TokenDropdownProps> = ({
     </AutoComplete.Option>
   );
 
-  const searchHandler = (currentValue: any) => {
+  const searchHandler = (currentValue: string) => {
     if (!currentValue) {
       setOptions(
         allOptions.map(({ label, value }) => makeOption(label, value)),

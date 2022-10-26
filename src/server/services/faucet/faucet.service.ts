@@ -215,24 +215,34 @@ class FaucetService {
           ) {
             cur.accounts.push(next.scannerId);
             cur.redemptions++;
-            cur.tokensRedeemed = [];
-            // cur.tokensRedeemed = next.balanceChanges.reduce(
-            //   (curTokenBalances, nextTokenBalance) => {
-            //     const index = curTokenBalances.findIndex(
-            //       (tokenBalance) => tokenBalance.mint === nextTokenBalance.mint,
-            //     );
 
-            //     if (index > -1) {
-            //       curTokenBalances[index].amount =
-            //         BigInt(curTokenBalances[index].amount) +
-            //         BigInt(nextTokenBalance.amount);
-            //     } else {
-            //       curTokenBalances.push(nextTokenBalance);
-            //     }
-            //     return curTokenBalances;
-            //   },
-            //   cur.tokensRedeemed,
-            // );
+            const index = cur.tokensRedeemed.findIndex(
+              (tokenBalance) => tokenBalance.mint === next.tokenMint,
+            );
+
+            if (index > -1) {
+              const newAmount = String(
+                BigInt(cur.tokensRedeemed?.[index]?.amount ?? '0') +
+                  BigInt(next?.tokenMintAmount ?? '0'),
+              );
+
+              /**
+               * TODO: Figure out how to type this properly
+               */
+              (cur.tokensRedeemed[index] as any).amount = newAmount;
+            } else {
+              const info = TokenUtil.tokenInfoMap.get(next?.tokenMint ?? '');
+              cur.tokensRedeemed.push({
+                mint: next.tokenMint ?? '',
+                amount:
+                  TokenUtil.convertSizeToQuantity(
+                    next.tokenMintAmount ?? '',
+                    next.tokenMint ?? '',
+                    info,
+                  ) ?? '',
+                info: info ?? null,
+              });
+            }
           }
 
           return cur;
@@ -240,7 +250,7 @@ class FaucetService {
         {
           accounts: [] as string[],
           redemptions: 0,
-          tokensRedeemed: [],
+          tokensRedeemed: [] as TokenBalance[],
         },
       );
 
@@ -657,7 +667,10 @@ class FaucetService {
           type: 'Withdrawl' as ScanTypes,
           ref: String(ref),
           tokenMint: faucet.tokenMint,
-          tokenMintAmount: tokenBalance.amount,
+          tokenMintAmount: TokenUtil.convertQuantityToSize(
+            tokenBalance.amount,
+            faucet.tokenMint,
+          ),
           signature: null,
         });
 

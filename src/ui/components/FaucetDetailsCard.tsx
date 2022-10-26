@@ -61,6 +61,8 @@ const FaucetDetailsCardInner: React.FC<FaucetDetailsCardProps> = ({
   const { setToast } = useToasts();
   const { copy } = useClipboard();
 
+  console.log(data?.tokensRedeemed);
+
   const fields = [
     {
       key: 'Status',

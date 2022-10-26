@@ -3,7 +3,7 @@ import { withdrawFaucet } from '~/server/services/faucet/faucet.http';
 
 export default async function withdrawFaucetRoute(
   req: NextApiRequest,
-  res: NextApiResponse<any>,
+  res: NextApiResponse,
 ) {
   return withdrawFaucet(req, res);
 }

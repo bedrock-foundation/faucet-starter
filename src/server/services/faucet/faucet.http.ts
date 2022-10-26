@@ -2,10 +2,6 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import faucetService from './faucet.service';
 import { router } from '~/server/trpc';
 
-type ResponseError = {
-  message: string;
-};
-
 const caller = router({
   faucet: faucetService.router,
 }).createCaller({});
@@ -21,10 +17,7 @@ const metadata = (res: NextApiResponse, label: string) => {
   return null;
 };
 
-export async function fundFaucet(
-  req: NextApiRequest,
-  res: NextApiResponse<any | ResponseError>,
-) {
+export async function fundFaucet(req: NextApiRequest, res: NextApiResponse) {
   if (isGetRequest(req)) {
     return metadata(res, 'Fund Faucet');
   }
@@ -40,10 +33,7 @@ export async function fundFaucet(
   });
 }
 
-export async function redeemFaucet(
-  req: NextApiRequest,
-  res: NextApiResponse<any | ResponseError>,
-) {
+export async function redeemFaucet(req: NextApiRequest, res: NextApiResponse) {
   if (isGetRequest(req)) {
     return metadata(res, 'Redeem Faucet');
   }
@@ -60,7 +50,7 @@ export async function redeemFaucet(
 
 export async function withdrawFaucet(
   req: NextApiRequest,
-  res: NextApiResponse<any | ResponseError>,
+  res: NextApiResponse,
 ) {
   if (isGetRequest(req)) {
     return metadata(res, 'Withdraw Faucet');
