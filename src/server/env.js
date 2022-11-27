@@ -10,9 +10,12 @@ const { z } = require('zod');
 const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   FAUCET_SECRET_KEY_PATH: z.string(),
+  NEXT_PUBLIC_SOLANA_PAY_TLS_SERVER_ADDRESS: z.string().url(),
   NODE_ENV: z.enum(['development', 'test', 'production']),
   SOLANA_RPC_ENDPOINT: z.string().url(),
 });
+
+console.log(process.env);
 
 const env = envSchema.safeParse(process.env);
 

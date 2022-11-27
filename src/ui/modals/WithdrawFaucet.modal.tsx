@@ -25,7 +25,7 @@ const WithdrawFaucetModal: React.FC<WithdrawFaucetModalProps> = () => {
   const fundFaucetURL = String(
     encodeURL({
       link: new URL(
-        `https://bedrock-platform-production.ngrok.io/api/http/withdraw-faucet`,
+        `${process.env.NEXT_PUBLIC_SOLANA_PAY_TLS_SERVER_ADDRESS}/api/http/withdraw-faucet`,
       ),
     }),
   );

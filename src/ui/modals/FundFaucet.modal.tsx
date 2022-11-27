@@ -27,7 +27,7 @@ const FundFaucetModal: React.FC<FundFaucetModalProps> = () => {
   const fundFaucetURL = String(
     encodeURL({
       link: new URL(
-        `https://bedrock-platform-production.ngrok.io/api/http/fund-faucet?redemptions=${redemptions}`,
+        `${process.env.NEXT_PUBLIC_SOLANA_PAY_TLS_SERVER_ADDRESS}/api/http/fund-faucet?redemptions=${redemptions}`,
       ),
     }),
   );

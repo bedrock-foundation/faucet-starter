@@ -8,6 +8,8 @@ import { Faucet } from '~/server/services/faucet/faucet.service';
 import QRCode from '../elements/QRCode';
 import { encodeURL } from '@solana/pay';
 
+console.log(process.env);
+
 const Content = styled.div`
   display: flex;
   flex-direction: column;
@@ -27,7 +29,7 @@ const RedeemFaucetModal: React.FC<RedeemFaucetModalProps> = () => {
   const redeemFaucetUrl = String(
     encodeURL({
       link: new URL(
-        `https://bedrock-platform-production.ngrok.io/api/http/redeem-faucet`,
+        `${process.env.NEXT_PUBLIC_SOLANA_PAY_TLS_SERVER_ADDRESS}/api/http/redeem-faucet`,
       ),
     }),
   );

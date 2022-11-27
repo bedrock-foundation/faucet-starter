@@ -33,28 +33,23 @@ const InitializeFaucet: React.FC = () => {
             <Droplet size={60} />
             <Spacer h={0.5} />
             <Text style={{ textAlign: 'center' }} font="16px">
-              <Text b span>
-                Drip
-              </Text>
-              &nbsp;is a new way to airdrop tokens to your web3 audience
-              using&nbsp;
               <Link href="https://solanapay.com" target="_blank">
                 <Text b span type="success">
                   Solana Pay
                 </Text>
               </Link>
-              . It takes about{' '}
+              &nbsp;is a new way to interact with your web3 audience using&nbsp;
               <Text b span>
-                2 minutes
-              </Text>{' '}
-              to create a Drip QR code. Create a Campaign below to get started,
-              or{' '}
-              <Link href="https://google.com">
+                QR codes
+              </Text>
+              . Click the button below to initialize your faucet or checkout
+              the&nbsp;
+              <Link href="https://learn.bedrocklabs.xyz/solana-pay/introduction">
                 <Text b span type="success">
-                  learn more
+                  tutorial
                 </Text>
-                .
               </Link>
+              &nbsp;to learn more.
             </Text>
             <Spacer h={0.5} />
             <Flex width="80%">
