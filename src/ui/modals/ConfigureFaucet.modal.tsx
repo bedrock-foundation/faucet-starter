@@ -32,8 +32,7 @@ const ConfigureFaucetModal: React.FC<ConfigureFaucetModalProps> = ({
   const [tokenMintAmount, setTokenMintAmount] = React.useState(
     faucet?.tokenMintAmount ?? '0',
   );
-  const tokens = [...TokenUtil.tokenInfoMap.values()];
-  // tokens.length = 10;
+  const tokens = TokenUtil.tokenInfoList;
 
   /** Actions */
   const faucetQuery = trpc.faucet.get.useQuery({});

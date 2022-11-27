@@ -62,11 +62,11 @@ const convert = (balance: TokenBalance) => {
   );
 };
 
-type ScansTabelProps = {
+type ScansTableProps = {
   faucetId: string;
 };
 
-const ScansTableInner: React.FC<ScansTabelProps> = ({ faucetId }) => {
+const ScansTable: React.FC<ScansTableProps> = ({ faucetId }) => {
   /* Hooks */
   const theme = useTheme();
   const { setToast } = useToasts();
@@ -129,6 +129,18 @@ const ScansTableInner: React.FC<ScansTabelProps> = ({ faucetId }) => {
     );
   };
 
+  if (scanList.isLoading) {
+    return (
+      <Container theme={theme}>
+        <Card width="100%">
+          <Flex align="center" justify="center" height="400px">
+            <Loading />
+          </Flex>
+        </Card>
+      </Container>
+    );
+  }
+
   if (!scanList?.data?.length) {
     return (
       <Card width="1000px" height="300px">
@@ -170,7 +182,12 @@ const ScansTableInner: React.FC<ScansTabelProps> = ({ faucetId }) => {
             Interactions
           </Text>
           <Flex>
-            <Button scale={3 / 4} auto onClick={() => refresh()}>
+            <Button
+              scale={3 / 4}
+              auto
+              onClick={() => refresh()}
+              loading={scanList.isFetching}
+            >
               Refresh
             </Button>
             <Spacer />
@@ -373,26 +390,6 @@ const ScansTableInner: React.FC<ScansTabelProps> = ({ faucetId }) => {
         </Card>
       </Card>
     </Container>
-  );
-};
-
-const ScansTable = (props: ScansTabelProps) => {
-  const theme = useTheme();
-
-  return (
-    <React.Suspense
-      fallback={
-        <Container theme={theme}>
-          <Card width="100%">
-            <Flex align="center" justify="center" height="400px">
-              <Loading />
-            </Flex>
-          </Card>
-        </Container>
-      }
-    >
-      <ScansTableInner {...props} />
-    </React.Suspense>
   );
 };
 

@@ -5,7 +5,12 @@ import { Droplet } from '@geist-ui/icons';
 import Flex from '~/ui/elements/Flex';
 
 const InitializeFaucet: React.FC = () => {
-  const initFaucet = trpc.faucet.initialize.useMutation();
+  const utils = trpc.useContext();
+  const initFaucet = trpc.faucet.initialize.useMutation({
+    onSuccess: () => {
+      utils.invalidate();
+    },
+  });
 
   return (
     <div>

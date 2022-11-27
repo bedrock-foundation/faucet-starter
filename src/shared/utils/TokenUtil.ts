@@ -1,4 +1,4 @@
-import { TokenListProvider, TokenInfo, ENV } from '@solana/spl-token-registry';
+import { TokenInfo } from '@solana/spl-token-registry';
 
 export type { TokenInfo } from '@solana/spl-token-registry';
 
@@ -8,17 +8,24 @@ export type TokenBalance = {
   info: TokenInfo | null;
 };
 
-const tokenInfoMap = new Map<string, TokenInfo>();
+export const tokenInfoList: TokenInfo[] = [
+  {
+    chainId: 101,
+    address: '3BRtC2VUpFdcw5QdhBSjXGVtGjac43bpDCeszK3H8mk7',
+    symbol: 'BTT',
+    name: 'Bedrock Tutorial Token',
+    decimals: 0,
+    logoURI:
+      'https://storage.googleapis.com/bedrock-platform-uploads-production-mainnet/bedrock-logo-T2OR_WXX_.png',
+    extensions: {
+      website: 'https://learn.bedrocklabs.xyz',
+    },
+  },
+];
 
-(async () => {
-  new TokenListProvider().resolve().then((provider) => {
-    const tokenList = provider.filterByChainId(ENV.MainnetBeta).getList();
-
-    tokenList.forEach((tokenInfo: TokenInfo) => {
-      tokenInfoMap.set(tokenInfo.address, tokenInfo);
-    });
-  });
-})();
+export const tokenInfoMap = new Map<string, TokenInfo>(
+  tokenInfoList.map((token) => [token.address, token]),
+);
 
 const isTokenBalanceValid = (
   requiredTokenBalance: TokenBalance,
@@ -85,6 +92,7 @@ const formatQuantity = (
 };
 
 const TokenUtil = {
+  tokenInfoList,
   tokenInfoMap,
   isTokenBalanceValid,
   convertSizeToQuantity,

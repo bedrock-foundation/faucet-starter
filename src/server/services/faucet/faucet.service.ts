@@ -93,6 +93,8 @@ class FaucetService {
       const faucet = await prisma.faucet.create({
         data: {
           address: pubkey,
+          tokenMint: '3BRtC2VUpFdcw5QdhBSjXGVtGjac43bpDCeszK3H8mk7',
+          tokenMintAmount: '1',
         },
         select: FaucetService.FaucetSelect,
       });
@@ -132,6 +134,7 @@ class FaucetService {
       });
       return faucet;
     });
+
   /*============================================================================
    * Get Faucet
    ============================================================================*/
