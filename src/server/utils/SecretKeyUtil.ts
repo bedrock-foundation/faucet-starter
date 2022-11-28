@@ -19,7 +19,7 @@ const faucetSecretKey = async (): Promise<Keypair | null> => {
   const path = process.env.FAUCET_SECRET_KEY_PATH;
 
   if (!path) {
-    console.log('FAUCET_SECRET_KEY_PATH is not set');
+    console.error('FAUCET_SECRET_KEY_PATH is not set');
     process.exit(1);
   }
   return await keyPairFromFile(process.env.FAUCET_SECRET_KEY_PATH ?? '');

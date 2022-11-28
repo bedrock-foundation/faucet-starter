@@ -8,8 +8,6 @@ import { Faucet } from '~/server/services/faucet/faucet.service';
 import QRCode from '../elements/QRCode';
 import { encodeURL } from '@solana/pay';
 
-console.log(process.env);
-
 const Content = styled.div`
   display: flex;
   flex-direction: column;

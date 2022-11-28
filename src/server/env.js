@@ -15,8 +15,6 @@ const envSchema = z.object({
   SOLANA_RPC_ENDPOINT: z.string().url(),
 });
 
-console.log(process.env);
-
 const env = envSchema.safeParse(process.env);
 
 if (!env.success) {
