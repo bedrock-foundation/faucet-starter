@@ -55,7 +55,6 @@ class ScanService {
           await prisma.scan.update({
             where: { id: scanId },
             data: { signature, message: 'Confirmed', state: 'Confirmed' },
-            select: ScanService.ScanSelect,
           });
 
           break;
