@@ -7,4 +7,7 @@ export const appRouter = router({
   scan: scanService.router,
 });
 
+faucetService.setAppRouter(appRouter);
+scanService.setAppRouter(appRouter);
+
 export type AppRouter = typeof appRouter;
