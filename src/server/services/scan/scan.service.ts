@@ -5,7 +5,7 @@ import { prisma } from '~/server/prisma';
 import RPCConnection from '~/server/utils/RPCConnection';
 import WaitUtil from '~/shared/utils/WaitUtil';
 import { PublicKey } from '@solana/web3.js';
-import { AppRouter } from '~/server/appRouter';
+import { AppCaller } from '~/server/appRouter';
 
 export type Scan = Prisma.ScanGetPayload<{
   select: { [K in keyof Required<Prisma.ScanSelect>]: true };
@@ -90,10 +90,10 @@ class ScanService {
     });
   }
 
-  private appRouter: any = null;
+  private caller: any = null;
 
-  public setAppRouter(appRouter: AppRouter) {
-    this.appRouter = appRouter;
+  public setCaller(caller: AppCaller) {
+    this.caller = caller;
   }
 
   /*============================================================================
