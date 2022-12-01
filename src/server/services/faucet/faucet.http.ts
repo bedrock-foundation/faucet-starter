@@ -1,9 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { router } from '~/server/trpc';
-import FaucetService from './faucet.service';
+import faucetService from './faucet.service';
 
 const caller = router({
-  faucet: new FaucetService().router,
+  faucet: faucetService.router,
 }).createCaller({});
 
 const isGetRequest = (req: NextApiRequest) => req.method === 'GET';

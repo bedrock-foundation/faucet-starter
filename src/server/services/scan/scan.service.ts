@@ -14,7 +14,7 @@ export type ScanTypes = 'Add Funding' | 'Redemption' | 'Withdrawl';
 
 export type ScanStates = 'Scanned' | 'Confirmed' | 'Failed';
 
-export default class ScanService {
+class ScanService {
   public static ScanSelect = Prisma.validator<Prisma.ScanSelect>()({
     id: true,
     scannerId: true,
@@ -88,6 +88,12 @@ export default class ScanService {
       find: this.find,
     });
   }
+
+  appCaller: any = null;
+
+  public setAppCaller = (caller: any) => {
+    this.appCaller = caller;
+  };
 
   /*============================================================================
    * Create Scan
@@ -186,3 +192,5 @@ export default class ScanService {
       return scans;
     });
 }
+
+export default new ScanService();
