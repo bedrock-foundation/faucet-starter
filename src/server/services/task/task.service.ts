@@ -3,7 +3,7 @@ import { z } from 'zod';
 import RPCConnection from '~/server/utils/RPCConnection';
 import { PublicKey } from '@solana/web3.js';
 import { Job, Queue, Worker } from 'bullmq';
-import { AppCaller } from '~/server/appRouter';
+import scanService from '../scan/scan.service';
 
 const REDIS_CONNECTION_STRING = '';
 
@@ -29,6 +29,12 @@ const TASK_QUEUE_NAME = 'faucet-tasks';
 export const MAX_ATTEMPTS_PER_TASK = 40;
 export const ATTEMPT_MS_DELAY_PER_TASK = 3000;
 
+/**
+ * Create a caller to call our other services
+ */
+
+const caller = router({ scan: scanService.router }).createCaller({});
+
 class TaskService {
   // private scheduler: QueueScheduler = new QueueScheduler(TASK_QUEUE_NAME, {
   //   connection,
@@ -53,16 +59,11 @@ class TaskService {
     });
   }
 
-  private caller: any = null;
 
   constructor() {
     this.worker = new Worker(TASK_QUEUE_NAME, this.run);
 
     this.worker.on('error', console.error);
-  }
-
-  public setCaller(caller: AppCaller) {
-    this.caller = caller;
   }
 
   private info = (job: Job, status: string) => {
@@ -139,7 +140,7 @@ class TaskService {
     const isLastAttempt = job.attemptsMade >= MAX_ATTEMPTS_PER_TASK;
 
     if (signature) {
-      await this.caller.scan.update({
+      await caller.scan.update({
         id: scanId,
         message: 'Confirmed',
         state: 'Confirmed',
@@ -152,7 +153,7 @@ class TaskService {
         (MAX_ATTEMPTS_PER_TASK * ATTEMPT_MS_DELAY_PER_TASK) / 60 / 1000
       } minutes`;
 
-      await this.caller.scan.update({
+      await caller.scan.update({
         id: scanId,
         message,
         state: 'Failed',
