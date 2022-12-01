@@ -25,6 +25,9 @@ import TokenUtil, { TokenBalance } from '~/shared/utils/TokenUtil';
 import Flex from '../elements/Flex';
 import { trpc } from '~/shared/trpc';
 import AccountUtil from '~/shared/utils/AccountUtil';
+import useModal from '../hooks/useModal.hook';
+import { ModalTypes } from '../modals/Modal';
+import { Faucet } from '~/server/services/faucet/faucet.service';
 
 const Container = styled.div`
   position: relative;
@@ -63,17 +66,18 @@ const convert = (balance: TokenBalance) => {
 };
 
 type ScansTableProps = {
-  faucetId: string;
+  faucet: Faucet | null;
 };
 
-const ScansTable: React.FC<ScansTableProps> = ({ faucetId }) => {
+const ScansTable: React.FC<ScansTableProps> = ({ faucet }) => {
   /* Hooks */
   const theme = useTheme();
   const { setToast } = useToasts();
   const { copy } = useClipboard();
+  const { push } = useModal();
 
   /* State */
-  const scanList = trpc.scan.list.useQuery({ faucetId });
+  const scanList = trpc.scan.list.useQuery({ faucetId: faucet?.id ?? '' });
   const refresh = () => scanList.refetch();
 
   /**
@@ -144,28 +148,32 @@ const ScansTable: React.FC<ScansTableProps> = ({ faucetId }) => {
   if (!scanList?.data?.length) {
     return (
       <Card width="1000px" height="300px">
-        <Flex
-          align="center"
-          justify="center"
-          flex="1"
-          direction="column"
-          height="100%"
-        >
+        <Flex align="center" justify="center" direction="column" height="100%">
           <Flex
             align="center"
             justify="center"
-            flex="1"
             direction="column"
             width="470px"
+            height="200px"
           >
-            <Spacer h={0.5} />
             <Text style={{ textAlign: 'center' }} font="16px">
-              No interactions yet. Deposit some tokens to get started.
+              No interactions yet. Add some tokens to get started.
             </Text>
             <Spacer h={0.5} />
             <Flex width="80%">
-              <Button width="100%" scale={1.25}>
-                Deposit Tokens
+              <Button
+                width="100%"
+                scale={1.25}
+                onClick={() => {
+                  push({
+                    type: ModalTypes.FundFaucet,
+                    props: {
+                      faucet: faucet ?? null,
+                    },
+                  });
+                }}
+              >
+                Add Tokens
               </Button>
             </Flex>
           </Flex>

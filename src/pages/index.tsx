@@ -138,7 +138,7 @@ const FaucetPage: React.FC = () => {
                 <Content>
                   <FaucetDetailsCard faucet={faucet} />
                   <Spacer />
-                  <ScansTable faucetId={faucet.id ?? ''} />
+                  <ScansTable faucet={faucet} />
                 </Content>
               </>
             );
