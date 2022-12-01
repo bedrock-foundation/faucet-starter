@@ -14,7 +14,7 @@ export type ScanTypes = 'Add Funding' | 'Redemption' | 'Withdrawl';
 
 export type ScanStates = 'Scanned' | 'Confirmed' | 'Failed';
 
-class ScanService {
+export default class ScanService {
   public static ScanSelect = Prisma.validator<Prisma.ScanSelect>()({
     id: true,
     scannerId: true,
@@ -186,5 +186,3 @@ class ScanService {
       return scans;
     });
 }
-
-export default new ScanService();

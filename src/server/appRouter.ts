@@ -1,10 +1,10 @@
 import { router } from './trpc';
-import faucetService from './services/faucet/faucet.service';
-import scanService from './services/scan/scan.service';
+import FaucetService from './services/faucet/faucet.service';
+import ScanService from './services/scan/scan.service';
 
 export const appRouter = router({
-  faucet: faucetService.router,
-  scan: scanService.router,
+  faucet: new FaucetService().router,
+  scan: new ScanService().router,
 });
 
 export type AppRouter = typeof appRouter;
