@@ -3,7 +3,6 @@ import { z } from 'zod';
 import RPCConnection from '~/server/utils/RPCConnection';
 import { PublicKey } from '@solana/web3.js';
 import { Job, Queue, Worker } from 'bullmq';
-import scanService from '../scan/scan.service';
 
 const REDIS_CONNECTION_STRING = '';
 
@@ -33,8 +32,6 @@ export const ATTEMPT_MS_DELAY_PER_TASK = 3000;
  * Create a caller to call our other services
  */
 
-const caller = router({ scan: scanService.router }).createCaller({});
-
 class TaskService {
   // private scheduler: QueueScheduler = new QueueScheduler(TASK_QUEUE_NAME, {
   //   connection,
@@ -59,6 +56,11 @@ class TaskService {
     });
   }
 
+  appCaller: any = null;
+
+  public setAppCaller = (caller: any) => {
+    this.appCaller = caller;
+  };
 
   constructor() {
     this.worker = new Worker(TASK_QUEUE_NAME, this.run);
@@ -140,7 +142,7 @@ class TaskService {
     const isLastAttempt = job.attemptsMade >= MAX_ATTEMPTS_PER_TASK;
 
     if (signature) {
-      await caller.scan.update({
+      await this.appCaller.scan.update({
         id: scanId,
         message: 'Confirmed',
         state: 'Confirmed',
@@ -153,7 +155,7 @@ class TaskService {
         (MAX_ATTEMPTS_PER_TASK * ATTEMPT_MS_DELAY_PER_TASK) / 60 / 1000
       } minutes`;
 
-      await caller.scan.update({
+      await this.appCaller.scan.update({
         id: scanId,
         message,
         state: 'Failed',
