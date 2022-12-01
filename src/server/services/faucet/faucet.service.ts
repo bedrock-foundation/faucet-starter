@@ -13,7 +13,7 @@ import {
 } from '@solana/web3.js';
 import { AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import TokenUtil, { TokenBalance } from '~/shared/utils/TokenUtil';
-import ScanService, { Scan, ScanStates, ScanTypes } from '../scan/scan.service';
+import { Scan, ScanStates, ScanTypes } from '../scan/scan.service';
 import TransferUtil from '~/server/utils/TransferUtil';
 
 export type Faucet = Prisma.FaucetGetPayload<{
@@ -37,9 +37,7 @@ export type FaucetAnalytics = {
  * Create a caller to call our other services
  */
 
-const caller = router({ scan: new ScanService().router }).createCaller({});
-
-export default class FaucetService {
+class FaucetService {
   public static FaucetSelect = Prisma.validator<Prisma.FaucetSelect>()({
     id: true,
     address: true,
@@ -61,6 +59,12 @@ export default class FaucetService {
       withdraw: this.withdraw,
     });
   }
+
+  appCaller: any = null;
+
+  public setAppCaller = (caller: any) => {
+    this.appCaller = caller;
+  };
 
   /*============================================================================
    * Initialize Faucet
@@ -206,7 +210,7 @@ export default class FaucetService {
 
       const balances = await this.router.createCaller({}).balance({});
 
-      const scans: Scan[] = await caller.scan.list({
+      const scans: Scan[] = await this.appCaller.scan.list({
         faucetId: faucet.id,
       });
 
@@ -374,7 +378,7 @@ export default class FaucetService {
          * Create successful scan
          */
 
-        caller.scan.create({
+        this.appCaller.scan.create({
           scannerId: account,
           faucetId: faucet.id,
           faucetAddress: faucet.address,
@@ -395,7 +399,7 @@ export default class FaucetService {
         /**
          * Create failure scan
          */
-        caller.scan.create({
+        this.appCaller.scan.create({
           scannerId: account,
           faucetId: faucet.id,
           faucetAddress: faucet.address,
@@ -516,7 +520,7 @@ export default class FaucetService {
         /**
          * Create successful scan
          */
-        caller.scan.create({
+        this.appCaller.scan.create({
           scannerId: account,
           faucetId: faucet.id,
           faucetAddress: faucet.address,
@@ -537,7 +541,7 @@ export default class FaucetService {
         /**
          * Create failure scan
          */
-        caller.scan.create({
+        this.appCaller.scan.create({
           scannerId: account,
           faucetId: faucet.id,
           faucetAddress: faucet.address,
@@ -665,7 +669,7 @@ export default class FaucetService {
          * Create successful scan
          */
 
-        caller.scan.create({
+        this.appCaller.scan.create({
           scannerId: account,
           faucetId: faucet.id,
           faucetAddress: faucet.address,
@@ -689,7 +693,7 @@ export default class FaucetService {
         /**
          * Create failure scan
          */
-        caller.scan.create({
+        this.appCaller.scan.create({
           scannerId: account,
           faucetId: faucet.id,
           faucetAddress: faucet.address,
@@ -706,3 +710,5 @@ export default class FaucetService {
       }
     });
 }
+
+export default new FaucetService();
