@@ -9,10 +9,10 @@ export const appRouter = router({
   task: taskService.router,
 });
 
-const caller = appRouter.createCaller({});
+export const appCaller = appRouter.createCaller({});
 
-faucetService.setAppCaller(caller);
-scanService.setAppCaller(caller);
-taskService.setAppCaller(caller);
+faucetService.setAppCaller(appCaller);
+scanService.setAppCaller(appCaller);
+taskService.setAppCaller(appCaller);
 
 export type AppRouter = typeof appRouter;

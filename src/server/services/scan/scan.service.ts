@@ -2,9 +2,6 @@ import { router, publicProcedure } from '../../trpc';
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { prisma } from '~/server/prisma';
-import RPCConnection from '~/server/utils/RPCConnection';
-import WaitUtil from '~/shared/utils/WaitUtil';
-import { PublicKey } from '@solana/web3.js';
 
 export type Scan = Prisma.ScanGetPayload<{
   select: { [K in keyof Required<Prisma.ScanSelect>]: true };
@@ -30,55 +27,6 @@ class ScanService {
     createdAt: true,
     updatedAt: true,
   });
-
-  private confirmTransaction = async (
-    ref: string,
-    scanId: string,
-  ): Promise<void> => {
-    let signature: string | null = null;
-    try {
-      /**
-       * Try to confirm the transaction 60 times
-       * waiting 2 seconds between each attempt.
-       */
-      for (let i = 0; i < 60; i++) {
-        await WaitUtil.wait(2000);
-        const signatures = await RPCConnection.getSignaturesForAddress(
-          new PublicKey(ref),
-          {},
-          'confirmed',
-        );
-
-        if (signatures.length > 0) {
-          signature = signatures[0]?.signature ?? null;
-
-          await prisma.scan.update({
-            where: { id: scanId },
-            data: { signature, message: 'Confirmed', state: 'Confirmed' },
-          });
-
-          break;
-        }
-      }
-
-      /**
-       * Mark the transaction as failed if it was not confirmed
-       */
-      if (!signature) {
-        prisma.scan.update({
-          where: { id: scanId },
-          data: {
-            signature: null,
-            message: 'Failed to confirm in 2 minutes',
-            state: 'Failed',
-          },
-        });
-      }
-    } catch (e) {
-      console.error(`Error confirming transaction for scanId ${scanId}`);
-      console.error(e);
-    }
-  };
 
   public get router() {
     return router({
@@ -125,7 +73,11 @@ class ScanService {
        */
 
       if (scan.state === 'Scanned') {
-        this.confirmTransaction(scan.ref, scan.id);
+        this.appCaller.task.create({
+          scanId: scan.id,
+          ref: scan.ref,
+          type: 'Confirm Transaction',
+        });
       }
 
       return scan;
