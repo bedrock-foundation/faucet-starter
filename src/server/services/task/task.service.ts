@@ -4,8 +4,6 @@ import RPCConnection from '~/server/utils/RPCConnection';
 import { PublicKey } from '@solana/web3.js';
 import { Job, Queue, Worker } from 'bullmq';
 
-const REDIS_CONNECTION_STRING = '';
-
 export type TaskTypes = 'Confirm Transaction';
 
 type TaskData = {
@@ -16,29 +14,21 @@ type TaskData = {
 
 const TASK_QUEUE_NAME = 'faucet-tasks';
 
-// const redisUrl = new URL(REDIS_CONNECTION_STRING);
+const redisUrl = new URL(String(process.env.REDIS_CONNECTION_STRING));
 
-// const connection = {
-//   host: redisUrl.hostname,
-//   port: parseInt(redisUrl.port, 10),
-//   username: redisUrl.username,
-//   password: redisUrl.password,
-// };
+const connection = {
+  host: redisUrl.hostname,
+  port: parseInt(redisUrl.port, 10),
+  username: redisUrl.username,
+  password: redisUrl.password,
+};
 
 export const MAX_ATTEMPTS_PER_TASK = 40;
 export const ATTEMPT_MS_DELAY_PER_TASK = 3000;
 
-/**
- * Create a caller to call our other services
- */
-
 class TaskService {
-  // private scheduler: QueueScheduler = new QueueScheduler(TASK_QUEUE_NAME, {
-  //   connection,
-  // });
-
   private queue: Queue = new Queue(TASK_QUEUE_NAME, {
-    // connection,
+    connection,
     defaultJobOptions: {
       attempts: MAX_ATTEMPTS_PER_TASK,
       backoff: {
@@ -63,7 +53,7 @@ class TaskService {
   };
 
   constructor() {
-    this.worker = new Worker(TASK_QUEUE_NAME, this.run);
+    this.worker = new Worker(TASK_QUEUE_NAME, this.run, { connection });
 
     this.worker.on('error', console.error);
   }

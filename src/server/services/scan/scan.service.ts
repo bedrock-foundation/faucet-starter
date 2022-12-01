@@ -69,7 +69,7 @@ class ScanService {
       });
 
       /**
-       * Start polling for the transaction to be confirmed
+       * Create a task to confirm the transaction
        */
 
       if (scan.state === 'Scanned') {
