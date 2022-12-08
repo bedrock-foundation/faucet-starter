@@ -1,6 +1,6 @@
 import { PublicKey, TransactionInstruction } from '@solana/web3.js';
 import * as spl from '@solana/spl-token';
-import RPCConnection from '~/server/utils/RPCConnection';
+import RPCConnection from '../../server/utils/RPCConnection';
 
 export interface TransferSplTokenParams {
   fromAccountPublicKey: PublicKey;

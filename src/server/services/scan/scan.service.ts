@@ -1,7 +1,9 @@
 import { router, publicProcedure } from '../../trpc';
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
-import { prisma } from '~/server/prisma';
+import { prisma } from '../..//prisma';
+import { observable } from '@trpc/server/observable';
+import eventEmitter from '../../utils/eventEmitter';
 
 export type Scan = Prisma.ScanGetPayload<{
   select: { [K in keyof Required<Prisma.ScanSelect>]: true };
@@ -34,6 +36,7 @@ class ScanService {
       update: this.update,
       list: this.list,
       find: this.find,
+      onChange: this.onChange,
     });
   }
 
@@ -80,6 +83,8 @@ class ScanService {
         });
       }
 
+      eventEmitter.emit('onChange', scan.id);
+
       return scan;
     });
 
@@ -102,6 +107,8 @@ class ScanService {
         data: input,
         select: ScanService.ScanSelect,
       });
+
+      eventEmitter.emit('onChange', scan.id);
 
       return scan;
     });
@@ -142,6 +149,33 @@ class ScanService {
       });
 
       return scans;
+    });
+
+  /*============================================================================
+  * Scans onChange
+  ============================================================================*/
+  public onChangeInput = z.object({
+    faucetId: z.string(),
+  });
+
+  public onChange = publicProcedure
+    .input(this.onChangeInput)
+    .subscription(async ({ input }) => {
+      return observable<Scan[]>((emit) => {
+        const onChange = async (faucetId: string) => {
+          const scans = await prisma.scan.findMany({
+            where: { faucetId },
+            select: ScanService.ScanSelect,
+          });
+
+          emit.next(scans);
+        };
+
+        eventEmitter.on('onChange', onChange);
+        return () => {
+          eventEmitter.off('onChange', onChange);
+        };
+      });
     });
 }
 

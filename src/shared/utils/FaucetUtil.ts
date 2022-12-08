@@ -3,7 +3,7 @@ import type { TokenBalance } from './TokenUtil';
 import type {
   Faucet,
   FaucetStatus,
-} from '~/server/services/faucet/faucet.service';
+} from '../../server/services/faucet/faucet.service';
 
 const faucetRedemptionBalance = (faucet: Faucet): TokenBalance => {
   const info = TokenUtil.tokenInfoMap.get(faucet.tokenMint);

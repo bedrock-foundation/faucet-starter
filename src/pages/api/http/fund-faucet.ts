@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { fundFaucet } from '~/server/services/faucet/faucet.http';
+import { fundFaucet } from '../../../server/services/faucet/faucet.http';
 
 export default async function fundFaucetRoute(
   req: NextApiRequest,

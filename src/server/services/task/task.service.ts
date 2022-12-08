@@ -1,6 +1,6 @@
 import { router, publicProcedure } from '../../trpc';
 import { z } from 'zod';
-import RPCConnection from '~/server/utils/RPCConnection';
+import RPCConnection from '../../utils/RPCConnection';
 import { PublicKey } from '@solana/web3.js';
 import { Job, Queue, Worker } from 'bullmq';
 

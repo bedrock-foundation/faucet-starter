@@ -78,6 +78,23 @@ const ScansTable: React.FC<ScansTableProps> = ({ faucet }) => {
 
   /* State */
   const scanList = trpc.scan.list.useQuery({ faucetId: faucet?.id ?? '' });
+
+  const scansWhat = trpc.scan.onChange.useSubscription(
+    {
+      faucetId: faucet?.id ?? '',
+    },
+    {
+      onData(scans) {
+        console.log(scans);
+      },
+      onError(err) {
+        console.error('Subscription error:', err);
+      },
+    },
+  );
+
+  console.log(scansWhat);
+
   const refresh = () => scanList.refetch();
 
   /**

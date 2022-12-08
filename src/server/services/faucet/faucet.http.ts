@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { appCaller } from '~/server/appRouter';
+import { appCaller } from '../../appRouter';
 
 const isGetRequest = (req: NextApiRequest) => req.method === 'GET';
 

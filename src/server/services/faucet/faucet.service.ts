@@ -1,10 +1,10 @@
 import { router, publicProcedure } from '../../trpc';
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
-import { prisma } from '~/server/prisma';
+import { prisma } from '../..//prisma';
 import { TRPCError } from '@trpc/server';
-import SecretKeyUtil from '~/server/utils/SecretKeyUtil';
-import RPCConnection from '~/server/utils/RPCConnection';
+import SecretKeyUtil from '../../utils/SecretKeyUtil';
+import RPCConnection from '../../utils/RPCConnection';
 import {
   Keypair,
   PublicKey,
@@ -12,9 +12,9 @@ import {
   TransactionInstruction,
 } from '@solana/web3.js';
 import { AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import TokenUtil, { TokenBalance } from '~/shared/utils/TokenUtil';
+import TokenUtil, { TokenBalance } from '../../../shared/utils/TokenUtil';
 import { Scan, ScanStates, ScanTypes } from '../scan/scan.service';
-import TransferUtil from '~/server/utils/TransferUtil';
+import TransferUtil from '../../utils/TransferUtil';
 
 export type Faucet = Prisma.FaucetGetPayload<{
   select: { [K in keyof Required<Prisma.FaucetSelect>]: true };

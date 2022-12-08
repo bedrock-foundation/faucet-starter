@@ -12,9 +12,11 @@ const prismaGlobal = global as typeof global & {
 export const prisma: PrismaClient =
   prismaGlobal.prisma ||
   new PrismaClient({
-    log: env.NODE_ENV === 'development' ? ['error'] : ['error'],
+    // log: env.NODE_ENV === 'development' ? ['error'] : ['error'],
   });
 
-if (env.NODE_ENV !== 'production') {
-  prismaGlobal.prisma = prisma;
-}
+
+prismaGlobal.prisma = prisma;
+// if (env.NODE_ENV !== 'production') {
+  
+// }
