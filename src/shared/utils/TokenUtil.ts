@@ -8,13 +8,15 @@ export type TokenBalance = {
   info: TokenInfo | null;
 };
 
+export const BTT_MINT_ADDRESSS = '74gzSTeGPaMhjD3L4pDFrbxuzUmaugp4mcC6uPFLCirx';
+
 export const tokenInfoList: TokenInfo[] = [
   {
     chainId: 101,
-    address: '3BRtC2VUpFdcw5QdhBSjXGVtGjac43bpDCeszK3H8mk7',
+    address: BTT_MINT_ADDRESSS,
     symbol: 'BTT',
     name: 'Bedrock Tutorial Token',
-    decimals: 0,
+    decimals: 2,
     logoURI:
       'https://storage.googleapis.com/bedrock-platform-uploads-production-mainnet/bedrock-logo-T2OR_WXX_.png',
     extensions: {

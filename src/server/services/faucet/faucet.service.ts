@@ -12,7 +12,10 @@ import {
   TransactionInstruction,
 } from '@solana/web3.js';
 import { AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import TokenUtil, { TokenBalance } from '~/shared/utils/TokenUtil';
+import TokenUtil, {
+  BTT_MINT_ADDRESSS,
+  TokenBalance,
+} from '~/shared/utils/TokenUtil';
 import { Scan, ScanStates, ScanTypes } from '../scan/scan.service';
 import TransferUtil from '~/server/utils/TransferUtil';
 
@@ -99,7 +102,7 @@ class FaucetService {
       const faucet = await prisma.faucet.create({
         data: {
           address: pubkey,
-          tokenMint: '3BRtC2VUpFdcw5QdhBSjXGVtGjac43bpDCeszK3H8mk7',
+          tokenMint: BTT_MINT_ADDRESSS,
           tokenMintAmount: '1',
         },
         select: FaucetService.FaucetSelect,
@@ -387,7 +390,9 @@ class FaucetService {
           type: 'Add Funding' as ScanTypes,
           ref: String(ref),
           tokenMint: faucet.tokenMint,
-          tokenMintAmount: faucet.tokenMintAmount,
+          tokenMintAmount: String(
+            BigInt(faucet.tokenMintAmount) * BigInt(redemptions),
+          ),
           signature: null,
         });
 
